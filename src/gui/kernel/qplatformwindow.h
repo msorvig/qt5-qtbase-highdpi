@@ -81,6 +81,7 @@ public:
     QPlatformWindow *parent() const;
 
     QPlatformScreen *screen() const;
+    virtual QPlatformScreen *virtualScreen() const;
 
     virtual QSurfaceFormat format() const;
 

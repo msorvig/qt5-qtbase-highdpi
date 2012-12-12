@@ -61,7 +61,8 @@ HEADERS += \
         kernel/qplatformdialoghelper.h \
         kernel/qplatformservices.h \
         kernel/qplatformscreenpageflipper.h \
-        kernel/qplatformsystemtrayicon.h
+        kernel/qplatformsystemtrayicon.h \
+        kernel/qemulatedhidpi_p.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -109,7 +110,8 @@ SOURCES += \
         kernel/qplatformdialoghelper.cpp \
         kernel/qplatformservices.cpp \
         kernel/qplatformscreenpageflipper.cpp \
-        kernel/qplatformsystemtrayicon_qpa.cpp
+        kernel/qplatformsystemtrayicon_qpa.cpp \
+        kernel/qemulatedhidpi.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \

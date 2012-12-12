@@ -81,7 +81,7 @@ public:
         : ref(1)
     {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering
-             | QGL::StencilBuffer | QGL::DeprecatedFunctions;
+             | QGL::StencilBuffer | QGL::DeprecatedFunctions | QGL::HighDpi;
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;

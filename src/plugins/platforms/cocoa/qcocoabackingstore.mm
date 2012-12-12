@@ -41,6 +41,7 @@
 
 #include "qcocoabackingstore.h"
 #include <QtGui/QPainter>
+#include <QtGui/private/qemulatedhidpi_p.h>
 #include "qcocoahelpers.h"
 
 QT_BEGIN_NAMESPACE
@@ -121,11 +122,6 @@ CGImageRef QCocoaBackingStore::getBackingStoreCGImage()
     // outside the backingstore since it shares data with a QImage and
     // needs special memory considerations.
     return m_cgImage;
-}
-
-qreal QCocoaBackingStore::getBackingStoreDevicePixelRatio()
-{
-    return m_qImage.devicePixelRatio();
 }
 
 QT_END_NAMESPACE

@@ -90,11 +90,12 @@ QT_BEGIN_NAMESPACE
 // in tests/manual/cocoa at the time of writing.
 
 class QCocoaMenuBar;
+class QCocoaIntegration;
 
 class QCocoaWindow : public QPlatformWindow
 {
 public:
-    QCocoaWindow(QWindow *tlw);
+    QCocoaWindow(QWindow *tlw, const QCocoaIntegration *platformIntegration);
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect);
@@ -113,6 +114,7 @@ public:
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;
+    QPlatformScreen *virtualScreen() const;
 
     WId winId() const;
     void setParent(const QPlatformWindow *window);
@@ -159,6 +161,7 @@ public: // for QNSView
     friend class QCocoaBackingStore;
     friend class QCocoaNativeInterface;
 
+    const QCocoaIntegration *m_platformIntegration;
     QNSView *m_contentView;
     NSWindow *m_nsWindow;
     QNSWindowDelegate *m_nsWindowDelegate;

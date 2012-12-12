@@ -227,14 +227,11 @@ QTransform QPainterPrivate::viewTransform() const
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
 {
-#ifdef Q_OS_MAC
-    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
     if (device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
         return QTransform();
     const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
     if (deviceScale > 1.0)
         return QTransform::fromScale(deviceScale, deviceScale);
-#endif
     return QTransform();
 }
 
@@ -642,7 +639,8 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
 
 void QPainterPrivate::updateMatrix()
 {
-    state->matrix = state->WxF ? state->worldMatrix : QTransform();
+    state->matrix = state->worldMatrix;
+
     if (state->VxF)
         state->matrix *= viewTransform();
 
@@ -1828,6 +1826,8 @@ bool QPainter::begin(QPaintDevice *pd)
     }
 
     QRect systemRect = d->engine->systemRect();
+    //int scale = pd->metric(QPaintDevice::PdmPhysicalDpiX) / pd->metric(QPaintDevice::PdmDpiX);
+
     if (!systemRect.isEmpty()) {
         d->state->ww = d->state->vw = systemRect.width();
         d->state->wh = d->state->vh = systemRect.height();
@@ -1835,6 +1835,13 @@ bool QPainter::begin(QPaintDevice *pd)
         d->state->ww = d->state->vw = pd->metric(QPaintDevice::PdmWidth);
         d->state->wh = d->state->vh = pd->metric(QPaintDevice::PdmHeight);
     }
+/*
+    qDebug() << "systemRect" << systemRect;
+    qDebug() << "window" << d->state->ww << d->state->wh;
+    qDebug() << "view" << d->state->vw << d->state->vh;
+    qDebug() << "metric: Pdm" << pd->metric(QPaintDevice::PdmWidth) << pd->metric(QPaintDevice::PdmHeight);
+    qDebug() << "metric: DPI" << pd->metric(QPaintDevice::PdmDpiX) << pd->metric(QPaintDevice::PdmPhysicalDpiX);
+*/
 
     const QPoint coordinateOffset = d->engine->coordinateOffset();
     d->state->redirectionMatrix.translate(-coordinateOffset.x(), -coordinateOffset.y());

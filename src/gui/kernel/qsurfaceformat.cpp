@@ -59,7 +59,7 @@ class QSurfaceFormatPrivate
 public:
     explicit QSurfaceFormatPrivate(QSurfaceFormat::FormatOptions _opts = 0)
         : ref(1)
-        , opts(_opts)
+        , opts(_opts | QSurfaceFormat::HighDpi)
         , redBufferSize(-1)
         , greenBufferSize(-1)
         , blueBufferSize(-1)
@@ -134,6 +134,8 @@ public:
     \value DeprecatedFunctions Used to request that deprecated functions be included
         in the OpenGL context profile. If not specified, you should get a forward compatible context
         without support functionality marked as deprecated. This requires OpenGL version 3.0 or higher.
+    \value Used to request a high-resolution OpengGL context on high-dpi displays.
+        This option is enabled by default.
 */
 
 /*!
@@ -279,6 +281,25 @@ void QSurfaceFormat::setStereo(bool enable)
         newOptions |= QSurfaceFormat::StereoBuffers;
     } else {
         newOptions &= ~QSurfaceFormat::StereoBuffers;
+    }
+    if (int(newOptions) != int(d->opts)) {
+        detach();
+        d->opts = newOptions;
+    }
+}
+
+bool QSurfaceFormat::highDpi() const
+{
+    return (d->opts & QSurfaceFormat::HighDpi);
+}
+
+void QSurfaceFormat::setHighDpi(bool enable)
+{
+    QSurfaceFormat::FormatOptions newOptions = d->opts;
+    if (enable) {
+        newOptions |= QSurfaceFormat::HighDpi;
+    } else {
+        newOptions &= ~QSurfaceFormat::HighDpi;
     }
     if (int(newOptions) != int(d->opts)) {
         detach();

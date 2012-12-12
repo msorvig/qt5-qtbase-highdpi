@@ -54,6 +54,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
+#include <private/qemulatedhidpi_p.h>
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
 #include "qcocoaglcontext.h"
@@ -248,7 +249,7 @@ static QTouchDevice *touchDevice = 0;
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     m_backingStore = backingStore;
-    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
+    m_backingStoreOffset = offset;
     QRect br = region.boundingRect();
     [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
 }
@@ -284,7 +285,15 @@ static QTouchDevice *touchDevice = 0;
 
     // The backing store source rect will be larger on retina displays.
     // Scale dirtyRect by the device pixel ratio:
-    const qreal devicePixelRatio = m_backingStore->getBackingStoreDevicePixelRatio();
+    qreal devicePixelRatio = 1.0;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        if ([self window])
+            devicePixelRatio = [[self window] backingScaleFactor];
+    }
+#endif
+
     CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
                                          dirtyRect.origin.y * devicePixelRatio,
                                          dirtyRect.size.width * devicePixelRatio,
@@ -309,8 +318,8 @@ static QTouchDevice *touchDevice = 0;
 
     // Clip out and draw the correct sub image from the (shared) backingstore:
     CGRect backingStoreRect = CGRectMake(
-        dirtyBackingRect.origin.x + m_backingStoreOffset.x(),
-        dirtyBackingRect.origin.y + m_backingStoreOffset.y(),
+        dirtyBackingRect.origin.x + m_backingStoreOffset.x() * devicePixelRatio,
+        dirtyBackingRect.origin.y + m_backingStoreOffset.y() * devicePixelRatio,
         dirtyBackingRect.size.width,
         dirtyBackingRect.size.height
     );

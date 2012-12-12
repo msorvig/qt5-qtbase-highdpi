@@ -45,6 +45,7 @@
 #include <QScreen>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
+#include <QtGui/private/qemulatedhidpi_p.h>
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
@@ -216,7 +217,7 @@ void QXcbWindow::create()
     // Parameters to XCreateWindow() are frame corner + inner size.
     // This fits in case position policy is frame inclusive. There is
     // currently no way to implement it for frame-exclusive geometries.
-    QRect rect = window()->geometry();
+    QRect rect = qhidpiPointToPixel(window()->geometry());
     QPlatformWindow::setGeometry(rect);
 
     rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
@@ -1227,10 +1228,10 @@ void QXcbWindow::propagateSizeHints()
     xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
     xcb_size_hints_set_win_gravity(&hints, m_gravity);
 
-    QSize minimumSize = win->minimumSize();
-    QSize maximumSize = win->maximumSize();
-    QSize baseSize = win->baseSize();
-    QSize sizeIncrement = win->sizeIncrement();
+    QSize minimumSize = qhidpiPointToPixel(win->minimumSize());
+    QSize maximumSize = qhidpiPointToPixel(win->maximumSize());
+    QSize baseSize = qhidpiPointToPixel(win->baseSize());
+    QSize sizeIncrement = qhidpiPointToPixel(win->sizeIncrement());
 
     if (minimumSize.width() > 0 || minimumSize.height() > 0)
         xcb_size_hints_set_min_size(&hints, minimumSize.width(), minimumSize.height());

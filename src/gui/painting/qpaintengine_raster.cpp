@@ -487,6 +487,9 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
+
+    int scale = device->physicalDpiX() / device->logicalDpiX();
+
     d->outlineMapper->m_clip_rect = d->deviceRect;
 
     if (d->outlineMapper->m_clip_rect.width() > QT_RASTER_COORD_LIMIT)

@@ -124,6 +124,7 @@ public:
 
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
+    QPlatformScreen *qtForCocoaScreen(NSScreen *screen) const;
     void updateScreens();
 
 private:

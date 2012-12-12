@@ -43,6 +43,7 @@
 #include "qcocoawindow.h"
 #include "qcocoaautoreleasepool.h"
 #include <qdebug.h>
+#include <QtOpenGL/qgl.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformSupport/private/cglconvenience_p.h>
 

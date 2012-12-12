@@ -57,7 +57,8 @@ public:
     enum FormatOption {
         StereoBuffers            = 0x0001,
         DebugContext             = 0x0002,
-        DeprecatedFunctions      = 0x0004
+        DeprecatedFunctions      = 0x0004,
+        HighDpi                  = 0x0008
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
@@ -124,6 +125,9 @@ public:
 
     bool stereo() const;
     void setStereo(bool enable);
+
+    bool highDpi() const;
+    void setHighDpi(bool enable);
 
     void setOption(QSurfaceFormat::FormatOptions opt);
     bool testOption(QSurfaceFormat::FormatOptions opt) const;

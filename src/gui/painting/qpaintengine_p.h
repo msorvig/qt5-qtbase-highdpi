@@ -104,6 +104,9 @@ public:
     inline void setSystemTransform(const QTransform &xform)
     {
         systemTransform = xform;
+
+        if (hasSystemTransform) // ### hidpi patch is calling setSystemTransform multiple times
+            return;
         if ((hasSystemTransform = !xform.isIdentity()) || hasSystemViewport)
             transformSystemClip();
         systemStateChanged();

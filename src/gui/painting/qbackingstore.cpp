@@ -49,6 +49,8 @@
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
 
+#include <private/qemulatedhidpi_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QBackingStorePrivate
@@ -100,7 +102,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     if (win && !qt_window_private(win)->receivedExpose)
         qWarning("QBackingStore::flush() called with non-exposed window, behavior is undefined");
 
-    d_ptr->platformBackingStore->flush(win, region, offset);
+    d_ptr->platformBackingStore->flush(win, qhidpiPointToPixel(region), offset);
 }
 
 /*!
@@ -110,7 +112,24 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
 */
 QPaintDevice *QBackingStore::paintDevice()
 {
-    return d_ptr->platformBackingStore->paintDevice();
+    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
+    // When emulating high-dpi mode (see qemulatedhidpi_p.h) we're asking the
+    // platform backing store might to create a "large" backing store image
+    // for us. This image needs to be converted into a high-dpi image by
+    // setting the scale factor:
+    if (device->devType() == QInternal::Image) {
+        QImage *image = reinterpret_cast<QImage *>(device);
+
+        // The cocoa plugin will create a high-dpi image on native high-dpi
+        // displays. Don't change it! Ideally we could multiply in the
+        // emulated scale factor here, but the paintDevice() accessor is
+        // called multiple times on the same image so we would be accumulating
+        // scale factor changes.
+        if (image->devicePixelRatio() < 2)
+            image->setDevicePixelRatio(qhidpiIsEmulationGetScaleFactor());
+    }
+
+    return device;
 }
 
 /*!
@@ -148,7 +167,7 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
-    d_ptr->platformBackingStore->beginPaint(region);
+    d_ptr->platformBackingStore->beginPaint(qhidpiPointToPixel(region));
 }
 
 /*!
@@ -168,8 +187,8 @@ void QBackingStore::endPaint()
 */
 void QBackingStore::resize(const QSize &size)
 {
-    d_ptr->size = size;
-    d_ptr->platformBackingStore->resize(size, d_ptr->staticContents);
+    d_ptr->size = size; // QBackingStore stores size in point, QPlatformBackingStore gets it in pixel.
+    d_ptr->platformBackingStore->resize(size * qhidpiIsEmulationGetScaleFactor(), d_ptr->staticContents);
 }
 
 /*!
@@ -192,7 +211,7 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     Q_UNUSED(dx);
     Q_UNUSED(dy);
 
-    return d_ptr->platformBackingStore->scroll(area, dx, dy);
+    return d_ptr->platformBackingStore->scroll(qhidpiPointToPixel(area), qhidpiPointToPixel(dx), qhidpiPointToPixel(dy));
 }
 
 void QBackingStore::setStaticContents(const QRegion &region)

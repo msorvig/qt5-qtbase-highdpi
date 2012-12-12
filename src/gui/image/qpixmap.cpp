@@ -276,6 +276,21 @@ QPixmap::~QPixmap()
 }
 
 /*!
+    Returns a pixmap suitable for caching contents for drawing to \a targetWindow.
+
+    \a size is in points. The retuned pixmap may be larger than \a size, and
+    may have a devicePixelRatio different than 1.
+
+*/
+QPixmap QPixmap::cachePixmap(const QSize &pointSize, QWindow *targetWindow)
+{
+    qreal actualScaleFactor = targetWindow ? targetWindow->devicePixelRatio() : qApp->devicePixelRatio();
+    QPixmap cache = QPixmap(pointSize * actualScaleFactor);
+    cache.setDevicePixelRatio(actualScaleFactor);
+    return cache;
+}
+
+/*!
   \internal
 */
 int QPixmap::devType() const
@@ -674,7 +689,7 @@ qreal QPixmap::devicePixelRatio() const
     The net effect of this is that the pixmap is displayed as
     high-dpi pixmap rather than a large pixmap.
 
-        \sa devicePixelRatio()
+    \sa devicePixelRatio()
 */
 void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 {

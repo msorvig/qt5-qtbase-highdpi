@@ -91,6 +91,11 @@ QPlatformScreen *QPlatformWindow::screen() const
     return window()->screen()->handle();
 }
 
+QPlatformScreen *QPlatformWindow::virtualScreen() const
+{
+    return screen();
+}
+
 /*!
     Returns the actual surface format of the window.
 */

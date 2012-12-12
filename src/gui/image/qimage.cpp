@@ -103,6 +103,7 @@ QImageData::QImageData()
       ldpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
+
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
       is_cached(false), is_locked(false), cleanupFunction(0), cleanupInfo(0),
       paintEngine(0)
@@ -760,6 +761,14 @@ QImage::QImage(const QSize &size, Format format)
     d = QImageData::create(size, format, 0);
 }
 
+
+QImage QImage::cacheImage(const QSize &pointSize, QWindow *targetWindow)
+{
+    qreal actualScaleFactor = targetWindow ? targetWindow->devicePixelRatio() : qApp->devicePixelRatio();
+    QImage cache = QImage(pointSize * actualScaleFactor, QImage::Format_ARGB32_Premultiplied);
+    cache.setDevicePixelRatio(actualScaleFactor);
+    return cache;
+}
 
 
 QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)

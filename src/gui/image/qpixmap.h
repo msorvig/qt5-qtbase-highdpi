@@ -75,6 +75,8 @@ public:
     QPixmap(const QPixmap &);
     ~QPixmap();
 
+    static QPixmap cachePixmap(const QSize &pointSize, QWindow *targetWindow = 0);
+
     QPixmap &operator=(const QPixmap &);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QPixmap &operator=(QPixmap &&other)

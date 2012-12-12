@@ -105,6 +105,7 @@ namespace QGL
         HasOverlay              = 0x0100,
         SampleBuffers           = 0x0200,
         DeprecatedFunctions     = 0x0400,
+        HighDpi                 = 0x0800,
         SingleBuffer            = DoubleBuffer    << 16,
         NoDepthBuffer           = DepthBuffer     << 16,
         ColorIndex              = Rgba            << 16,
@@ -115,7 +116,8 @@ namespace QGL
         IndirectRendering       = DirectRendering << 16,
         NoOverlay               = HasOverlay      << 16,
         NoSampleBuffers         = SampleBuffers   << 16,
-        NoDeprecatedFunctions   = DeprecatedFunctions << 16
+        NoDeprecatedFunctions   = DeprecatedFunctions << 16,
+        NoHighDpi               = HighDpi << 16
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 }

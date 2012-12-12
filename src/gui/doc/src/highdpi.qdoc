@@ -1,0 +1,146 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \module QtGui
+    \title High-dpi Qt
+    \ingroup modules
+
+    \brief Qt supports high-dpi displays using a high-dpi mode as seen on Mac OS X.
+           The main benefit of this mode is high degree of backwards compatibility
+           where existing applications can work in high-dpi mode with few modifications.
+
+    \section1 Platform support.
+
+    High-dpi mode is currently supported on Mac OS X. There is also a cross-platform development
+    with wider platform support, see \l{HighdpiDeveloperMode},
+
+    \section1 Device pixels and device independent pixels.
+    Enbabling the high-dpi mode creates a distinction between device independent pixels
+    (dips) and device pixels. Device pixels are physical pixels on screen while
+    device independent pixels are the logical units which the application specifies
+    geometry in.
+
+    On a normal-dpi display there is a 1:1 mapping betweeen dips and device pixels. The
+    High-dpi mode doubles resoltion in each directon, creating an 1:2 mapping.
+
+    Example: The display on the retina Macbook Pro has a resolution of 2800x1800 pixels
+             Applications see half of this resoltuon and QScreen::size() returns 1400x900.
+             The Qt backing store has the full 2800x1800 resolution.
+
+    Note: The Qt documentation has many references to "pixels". These are usually device independed
+          pixels, especially concerning geometry. A notable exception is Qimage and QPixmap,
+          which have device pixels.
+
+    Note: Documentation from Apple refers to device independent pixels as "points".
+          These two terms are equivalent in the high-dpi context.
+
+    \section1 Enabling high-dpi mode. (On Mac OS X)
+
+    \section2 Info.plist
+
+    High-dpi is enabled by default, and is controlled by an entry in the Info.plist file:
+        <key>NSHighResolutionCapable</key>
+        <string>True</string>
+
+    Also make sure Info.plist has a NSPrincipalClass entry:
+        <key>NSPrincipalClass</key>
+        <string>NSApplication</string>
+
+    Qmake automatically adds these values when generating the app bundle.
+
+    \section2 Opengl
+
+    OpenGL contexts have a format option:
+        QSurfaceFormat::HighDpi
+
+    This option is also enabled by default on Mac OS X.
+
+    \section1 Detecting high-dpi mode.
+    High-dpi mode is a per-window attribute and can be detected by reading QWindow::devicePixelRatio()
+    which will return either 1.0 or 2.0.
+
+    If you don't know the target window you can use QGuiApplication::devicePixelRatio, which will
+    return the highest ratio found on the system. This is not optimal for multiple-display systems
+    with a mix of normal and high dpi screens, but works correctly for single-display systems.
+
+    \section1 Managing high-dpi raster content.
+    Applications will want to add high resolution artwork. Here you have two optons, either
+    provie a single high-resolution version and let Qt scale it to size or provide two
+    versions, one for each resoltion.
+
+    Exmaple: see examples/widgets/highdpi
+
+    \section2 Adding 2x versions.
+    Qt adopts the "@2x" convention for separating normal-dpi and high-dpi files. For example
+    if you have "myIcon.png" you can add myIcon@2x.png. "@2x" is a hint to Qt and tells it
+    to treat the image a high-dpi version.
+
+    \section2 Qt Quick
+    Qt Quick automatically looks for "@2x" files and uses them when appropriate.
+
+    Image {
+        src = "myIcon.png" // will look for myIcon@2@.png as well.
+    }
+
+    \section2 Using QIcon to manage multiple versions
+
+    \section2 Specifying the devicePixelRatio for images
+
+    \section2 Drawing 2x images and pixmaps using QPainter
+    When drawing 2x images it is important to remember that the destination rectangle is
+    in device independent pixels. The source rectangle is in device pixels. For example,
+    in high-dpi mode you will want to draw a 64x64 source image into a 32x32 destination
+    rect.
+
+    It's now an error to compute destination rectangles directly from source rectangles.
+    Code paths that need to handle both normal and high dpi pixmaps can use QPixmap::devicePixelRatio
+    to handle both cases:
+
+    QRect dst(pos, pixmap.size() / pixmap.devicePixelRatio())
+    painter->drawPixmap(dst, pixmap, src);
+
+    If you want to draw the entire pixmap you can still use the QPoint overload. Qt will then
+    calculate the correct destination rectangle based on the device pixel ratio.
+
+    painter->drawPixmap(point, pixmap);
+
+    \section1 High-Dpi OpenGL
+
+    OpenGL is a device pixel oriented API but GL widget window geometry is still specified
+    in device independent pixels. Pixel shaders operate on device pixels. QGLWidget::resizeGL()
+    gives the size in device pixels. This can sometimes have unintended consequenses if for
+        example shader paramaters a calculated based on Qt Quick Item geometry and is something
+    to watch out for.
+
+    \section1 Cross-platform high-dpi "developer mode".
+
+    export QT_EMULATED_HIGHDPI=1
+
+    This allows you to test in high-dpi mode on on normal-dpi systems and displays. Qt will
+    scale the application to 2x normal size when this mode is active.
+*/
