@@ -84,8 +84,7 @@ void Window::initialize()
     create();
     m_backingStore = new QBackingStore(this);
 
-    QScreen *screen = this->virtualScreen();
-    qreal scaleFactor = screen->physicalDotsPerInch() / screen->logicalDotsPerInch();
+    qreal scaleFactor = this->devicePixelRatio();
     m_image = QImage(geometry().size() * scaleFactor, QImage::Format_RGB32);
     m_image.fill(colorTable[m_backgroundColorIndex % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
 
@@ -131,8 +130,7 @@ void Window::resizeEvent(QResizeEvent *)
     QImage old = m_image;
 
   //  qDebug() << "Window::resizeEvent" << geometry().size();
-    QScreen *screen = this->virtualScreen();
-    qreal scaleFactor = screen->physicalDotsPerInch() / screen->logicalDotsPerInch();
+    qreal scaleFactor = this->devicePixelRatio();
     QSize backingSize = geometry().size() * scaleFactor;
 
 //    qDebug() << "backingSize" << backingSize;
@@ -183,16 +181,13 @@ void Window::timerEvent(QTimerEvent *)
 
 void Window::render()
 {
-    QScreen *screen = this->virtualScreen();
-    qreal scaleFactor = screen->physicalDotsPerInch() / screen->logicalDotsPerInch();
+    qreal scaleFactor = this->devicePixelRatio();
 
     QRect windowRect(QPoint(), geometry().size());
     QRect slightltSmallerWindowRect(QPoint(), geometry().size() * 0.9);
-    QRect backingRect(QPoint(), geometry().size() * 2); // ###
-
+    QRect backingRect(QPoint(), geometry().size() * scaleFactor);
 
     qDebug() << "\nrender window size" << windowRect.size() << "backing size" << backingRect.size() << "image size" << m_image.size();
-    qDebug() << "screen physical" << screen->physicalDotsPerInch() << "screen logical" << screen->logicalDotsPerInch() << "scale" << scaleFactor;
 
     m_backingStore->resize(windowRect.size());
     m_backingStore->beginPaint(windowRect);
@@ -201,8 +196,8 @@ void Window::render()
 
 
     QPainter p(device);
-    p.fillRect(backingRect, Qt::red);
-    p.fillRect(windowRect, Qt::blue);
+    p.fillRect(backingRect, Qt::red); // fill with red
+    p.fillRect(windowRect, Qt::blue); // fill with blue - red should not be visible
     p.fillRect(slightltSmallerWindowRect, Qt::gray);
 
   //  p.drawImage(QRect(QPoint(0,0), backingRect.size()), // ### drawImage coordinate confusion
