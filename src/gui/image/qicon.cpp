@@ -345,6 +345,9 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &_size, QIc
                 }
                 if (pe->size == QSize() && pe->pixmap.isNull()) {
                     pe->pixmap = QPixmap(pe->fileName);
+                    // Reset the devicePixelRatio. The pixmap may be loaded from a @2x file,
+                    // but be used as a 1x pixmap by QIcon.
+                    pe->pixmap.setDevicePixelRatio(1.0);
                     pe->size = pe->pixmap.size();
                 }
                 if(pe->size == size) {
@@ -563,6 +566,14 @@ QIcon::QIcon(const QString &fileName)
     : d(0)
 {
     addFile(fileName);
+
+    // Check if a "@2x" file exists and add that as well.
+    QString at2xfileName = fileName;
+    int dotIndex = at2xfileName.lastIndexOf(".");
+    at2xfileName.insert(dotIndex, "@2x");
+    if (QFile::exists(at2xfileName)) {
+        addFile(at2xfileName);
+    }
 }
 
 
@@ -656,7 +667,7 @@ qint64 QIcon::cacheKey() const
 /*!
   Returns a pixmap with the requested \a size, \a mode, and \a
   state, generating one if necessary. The pixmap might be smaller than
-  requested, but never larger.
+  requested, but never larger. On high-dpi
 
   \sa pixmapForWidget, actualSize(), paint()
 */
@@ -715,19 +726,29 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
         return QPixmap();
 
     QSize targetSize = size;
+    qreal activeDevicePixelRatio = 1.0;
     bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
     if (enableHighdpi) {
-        if (window)
-            targetSize *= window->devicePixelRatio();
-        else
-            targetSize *= qApp->devicePixelRatio(); // Don't know which window to target.
+        activeDevicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio();
     }
+    targetSize *= activeDevicePixelRatio;
 
     QPixmap pixmap = d->engine->pixmap(targetSize, mode, state);
+    if (pixmap.devicePixelRatio() > 1.0)
+        pixmap.setDevicePixelRatio(1.0);
 
-    // Detect high-dpi pixmap and set scale factor.
-    if (enableHighdpi && pixmap.size().width() > size.width())
-        pixmap.setDevicePixelRatio(qMax(qreal(1.0), qreal(pixmap.size().width()) / qreal(size.width())));
+    // Set devicePixelRatio to 2.0 if we are returning a pixmap larger than the
+    // requested size. There are two cases here:
+    // 1) The pixmap is exacly 2x the requested size (it cannot be more)
+    // 2) The pixmap is between 1x and 2x.
+    //
+    // In case 2) we indicate that the pixmap should be drawn exactly to
+    // the pixel grid at 2x and appear smaller than the requested size.
+    // This ensures that the pixmap will not exceed the requested size
+    // bounds when painted.
+    //
+    if ((pixmap.size().width() > size.width() || pixmap.size().height() > size.height()))
+        pixmap.setDevicePixelRatio(2.0);
 
     return pixmap;
 }
@@ -746,13 +767,12 @@ QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State sta
         return QSize();
 
     QSize targetSize = size;
+    qreal activeDevicePixelRatio = 1.0;
     bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
     if (enableHighdpi) {
-        if (window)
-            targetSize *= window->devicePixelRatio();
-        else
-            targetSize *= qApp->devicePixelRatio(); // Don't know which window to target.
+        activeDevicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio(); // Don't know which window to target.
     }
+    targetSize *= activeDevicePixelRatio;
 
     return d->engine->actualSize(targetSize, mode, state);
 }

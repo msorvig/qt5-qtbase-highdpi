@@ -331,6 +331,89 @@ void apiTest()
     apiTestdevicePixelRatioSetter<QPixmap>();
 }
 
+// Request and draw na icon at different sizes
+class IconDrawing : public QWidget
+{
+public:
+    QIcon *iconHighDPI;
+    QIcon *iconNormalDpi;
+
+    IconDrawing()
+    {
+        iconHighDPI = new QIcon(":mode_Project.png"); // will auto-load @2x version.
+        iconNormalDpi = new QIcon(":mode_Project_normal.png"); // does not have a 2x version.
+    }
+
+    ~IconDrawing()
+    {
+        delete iconHighDPI;
+        delete iconNormalDpi;
+    }
+
+    void paintEvent(QPaintEvent *event)
+    {
+        int x = 10;
+        int y = 10;
+        int dx = 50;
+        int dy = 50;
+        int maxX = 600;
+        int minSize = 5;
+        int maxSize = 120;
+        int sizeIncrement = 20;
+
+        qputenv("QT_HIGHDPI_AWARE", ""); // disable generation of high-dpi pixmaps from QIcon.
+
+        // normal icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+        x = 10;
+        y+=dy;
+
+        // high-dpi icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+
+        x = 10;
+        y+=dy;
+
+        qputenv("QT_HIGHDPI_AWARE", "1"); // enable generation of high-dpi pixmaps from QIcon.
+
+        // normal icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+        x = 10;
+        y+=dy;
+
+        // high-dpi icon (draw point)
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+
+        x = 10;
+        y+=dy;
+
+    };
+};
+
 int main(int argc, char **argv)
 {
     qputenv("QT_HIGHDPI_AWARE", "1");
@@ -361,6 +444,9 @@ int main(int argc, char **argv)
 
     Fonts fonts;
     fonts.show();
+
+    IconDrawing iconDrawing;
+    iconDrawing.show();
 
     return app.exec();
 }
