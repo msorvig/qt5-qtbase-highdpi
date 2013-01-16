@@ -62,16 +62,16 @@ public:
 
 PixmapPainter::PixmapPainter()
 {
-    pixmap1X = QPixmap(":/qticon.png");
-    pixmap2X = QPixmap(":/qticon@2x.png");
-    pixmapLarge = QPixmap(":/qticon_large.png");
+    pixmap1X = QPixmap(":/qticon64.png");
+    pixmap2X = QPixmap(":/qticon64@2x.png");
+    pixmapLarge = QPixmap(":/qticon128.png");
 
-    image1X = QImage(":/qticon.png");
-    image2X = QImage(":/qticon@2x.png");
-    imageLarge = QImage(":/qticon_large.png");
+    image1X = QImage(":/qticon64.png");
+    image2X = QImage(":/qticon64@2x.png");
+    imageLarge = QImage(":/qticon128.png");
 
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
+    qtIcon.addFile(":/qticon64.png");
+    qtIcon.addFile(":/qticon64@2x.png");
 }
 
 void PixmapPainter::paintEvent(QPaintEvent *event)
@@ -132,12 +132,12 @@ public:
 
 Labels::Labels()
 {
-    pixmap1X = QPixmap(":/qticon.png");
-    pixmap2X = QPixmap(":/qticon@2x.png");
-    pixmapLarge = QPixmap(":/qticon_large.png");
+    pixmap1X = QPixmap(":/qticon64.png");
+    pixmap2X = QPixmap(":/qticon64@2x.png");
+    pixmapLarge = QPixmap(":/qticon128.png");
 
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
+    qtIcon.addFile(":/qticon64.png");
+    qtIcon.addFile(":/qticon64@2x.png");
     setWindowIcon(qtIcon);
     setWindowTitle("Labels");
 
@@ -172,10 +172,10 @@ public:
 
 MainWindow::MainWindow()
 {
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
-    qtIcon1x.addFile(":/qticon.png");
-    qtIcon2x.addFile(":/qticon@2x.png");
+    qtIcon.addFile(":/qticon64.png");
+    qtIcon.addFile(":/qticon64@2x.png");
+    qtIcon1x.addFile(":/qticon64.png");
+    qtIcon2x.addFile(":/qticon64@2x.png");
     setWindowIcon(qtIcon);
     setWindowTitle("MainWindow");
 
@@ -426,24 +426,24 @@ int main(int argc, char **argv)
 
     Labels label;
     label.resize(200, 200);
-    label.show();
+//    label.show();
 
     MainWindow mainWindow;
-    mainWindow.show();
+//    mainWindow.show();
 
     StandardIcons icons;
     icons.resize(510, 510);
-    icons.show();
+//    icons.show();
 
     Caching caching;
     caching.resize(300, 300);
-    caching.show();
+//    caching.show();
 
     Style style;
-    style.show();
+//    style.show();
 
     Fonts fonts;
-    fonts.show();
+//    fonts.show();
 
     IconDrawing iconDrawing;
     iconDrawing.show();
