@@ -425,13 +425,4 @@ QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
     return mKeyboardMapper->possibleKeys(event);
 }
 
-QPlatformScreen *QCocoaIntegration::qtForCocoaScreen(NSScreen *screen) const
-{
-    foreach (QCocoaScreen *platformScreen, mScreens) {
-        if (platformScreen->m_screen == screen)
-            return platformScreen;
-    }
-    return 0;
-}
-
 QT_END_NAMESPACE

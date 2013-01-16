@@ -856,12 +856,6 @@ QMargins QCocoaWindow::frameMargins() const
         frameC.origin.y - frameW.origin.y);
 }
 
-QPlatformScreen *QCocoaWindow::virtualScreen() const
-{
-    NSScreen *screen = [m_nsWindow screen];
-    return m_platformIntegration->qtForCocoaScreen(screen);
-}
-
 void QCocoaWindow::setFrameStrutEventsEnabled(bool enabled)
 {
     m_frameStrutEventsEnabled = enabled;

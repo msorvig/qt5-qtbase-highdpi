@@ -114,7 +114,6 @@ public:
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;
-    QPlatformScreen *virtualScreen() const;
 
     WId winId() const;
     void setParent(const QPlatformWindow *window);
