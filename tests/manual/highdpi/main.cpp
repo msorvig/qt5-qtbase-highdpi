@@ -414,6 +414,39 @@ public:
     };
 };
 
+// Icons on buttons
+class Buttons : public QWidget
+{
+public:
+    Buttons()
+    {
+        QIcon icon;
+        icon.addFile(":/qticon16@2x.png");
+
+        QPushButton *button =  new QPushButton(this);
+        button->setIcon(icon);
+        button->setText("16@2x");
+
+        QTabBar *tab = new QTabBar(this);
+        tab->addTab(QIcon(":/qticon16.png"), "16@1x");
+        tab->addTab(QIcon(":/qticon16@2x.png"), "16@2x");
+        tab->addTab(QIcon(":/qticon16.png"), "");
+        tab->addTab(QIcon(":/qticon16@2x.png"), "");
+        tab->move(10, 100);
+        tab->show();
+
+        QToolBar *toolBar = new QToolBar(this);
+        toolBar->addAction(QIcon(":/qticon16.png"), "16");
+        toolBar->addAction(QIcon(":/qticon16@2x.png"), "16@2x");
+        toolBar->addAction(QIcon(":/qticon32.png"), "32");
+        toolBar->addAction(QIcon(":/qticon32@2x.png"), "32@2x");
+
+        toolBar->move(10, 200);
+        toolBar->show();
+    }
+};
+
+
 int main(int argc, char **argv)
 {
     qputenv("QT_HIGHDPI_AWARE", "1");
@@ -446,7 +479,11 @@ int main(int argc, char **argv)
 //    fonts.show();
 
     IconDrawing iconDrawing;
-    iconDrawing.show();
+//    iconDrawing.show();
+
+    Buttons buttons;
+    buttons.show();
+
 
     return app.exec();
 }
