@@ -118,6 +118,16 @@ static void qt_cleanup_icon_cache()
     qtIconCache()->clear();
 }
 
+static qreal qEffectiveDevicePixelRatio(QWindow *window = 0)
+{
+    qreal devicePixelRatio = 1.0;
+    bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
+    if (enableHighdpi) {
+        devicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio(); // Don't know which window to target.
+    }
+    return devicePixelRatio;
+}
+
 QIconPrivate::QIconPrivate()
     : engine(0), ref(1),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
@@ -140,10 +150,8 @@ QPixmapIconEngine::~QPixmapIconEngine()
 
 void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size();
-#if defined(Q_WS_MAC)
-    pixmapSize *= qt_mac_get_scalefactor();
-#endif
+    QSize pixmapSize = rect.size() * qEffectiveDevicePixelRatio();
+    QPixmap px = pixmap(pixmapSize, mode, state);
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 
@@ -725,13 +733,7 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
     if (!d)
         return QPixmap();
 
-    QSize targetSize = size;
-    qreal activeDevicePixelRatio = 1.0;
-    bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
-    if (enableHighdpi) {
-        activeDevicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio();
-    }
-    targetSize *= activeDevicePixelRatio;
+    QSize targetSize = size * qEffectiveDevicePixelRatio(window);
 
     QPixmap pixmap = d->engine->pixmap(targetSize, mode, state);
     if (pixmap.devicePixelRatio() > 1.0)
@@ -766,14 +768,7 @@ QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State sta
     if (!d)
         return QSize();
 
-    QSize targetSize = size;
-    qreal activeDevicePixelRatio = 1.0;
-    bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
-    if (enableHighdpi) {
-        activeDevicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio(); // Don't know which window to target.
-    }
-    targetSize *= activeDevicePixelRatio;
-
+    QSize targetSize = size * qEffectiveDevicePixelRatio(window);
     return d->engine->actualSize(targetSize, mode, state);
 }
 
