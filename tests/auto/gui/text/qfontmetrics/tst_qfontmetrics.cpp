@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -228,7 +228,7 @@ void tst_QFontMetrics::bypassShaping()
     int charsWidth = 0;
     for (int i = 0; i < text.size(); ++i)
         charsWidth += fm.width(text[i]);
-    // This assertion is needed in QtWebKit's WebCore::Font::offsetForPositionForSimpleText
+    // This assertion is needed in Qt WebKit's WebCore::Font::offsetForPositionForSimpleText
     QCOMPARE(textWidth, charsWidth);
 }
 
@@ -281,7 +281,7 @@ void tst_QFontMetrics::inFontUcs4()
     }
 
     {
-        QFontEngine *engine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
+        QFontEngine *engine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
         QGlyphLayout glyphs;
         glyphs.numGlyphs = 3;
         uint buf[3];

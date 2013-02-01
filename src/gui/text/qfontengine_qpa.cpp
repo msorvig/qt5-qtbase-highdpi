@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -710,7 +710,7 @@ void QFontEngineMultiQPA::ensureFallbackFamiliesQueried()
     if (fallbacksQueried)
         return;
     QStringList fallbacks = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(engine(0)->fontDef.family, QFont::Style(engine(0)->fontDef.style)
-                                                                                                                     , QFont::AnyStyle, QUnicodeTables::Script(script));
+                                                                                                                          , QFont::AnyStyle, QChar::Script(script));
     setFallbackFamiliesList(fallbacks);
 }
 
@@ -732,10 +732,10 @@ void QFontEngineMultiQPA::setFallbackFamiliesList(const QStringList &fallbacks)
 }
 
 /*
-  This is used indirectly by QtWebKit when using QTextLayout::setRawFont
+  This is used indirectly by Qt WebKit when using QTextLayout::setRawFont
 
   The purpose of this is to provide the necessary font fallbacks when drawing complex
-  text. Since QtWebKit ends up repeatedly creating QTextLayout instances and passing them
+  text. Since Qt WebKit ends up repeatedly creating QTextLayout instances and passing them
   the same raw font over and over again, we want to cache the corresponding multi font engine
   as it may contain fallback font engines already.
 */
@@ -762,7 +762,7 @@ QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int scr
         it++;
     }
     if (!engine) {
-        engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QUnicodeTables::Script(script));
+        engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QChar::Script(script));
         QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
     }
     Q_ASSERT(engine);

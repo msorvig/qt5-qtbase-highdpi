@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -69,7 +69,8 @@ public:
     enum Type {
         Raster_RGBMask,
         Raster_A8,
-        Raster_Mono
+        Raster_Mono,
+        Raster_ARGB
     };
 
     QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
@@ -77,6 +78,7 @@ public:
     virtual ~QFontEngineGlyphCache() { }
 
     Type cacheType() const { return m_type; }
+    const QTransform &transform() const { return m_transform; }
 
     QTransform m_transform;
     QFontEngineGlyphCache::Type m_type;

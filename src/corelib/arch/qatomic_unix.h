@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,14 +44,11 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #pragma qt_sync_stop_processing
 #endif
 
@@ -112,6 +109,4 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #endif // QATOMIC_UNIX_H

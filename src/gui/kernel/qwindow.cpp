@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -217,7 +217,7 @@ QWindow::~QWindow()
 }
 
 /*!
-    Set the \a surfaceType of the window.
+    Sets the \a surfaceType of the window.
 
     Specifies whether the window is meant for raster rendering with
     QBackingStore, or OpenGL rendering with QOpenGLContext.
@@ -285,7 +285,7 @@ void QWindow::setVisible(bool visible)
     }
 
 #ifndef QT_NO_CURSOR
-    if (visible)
+    if (visible && d->hasCursor)
         d->applyCursor();
 #endif
     d->platformWindow->setVisible(visible);
@@ -594,7 +594,7 @@ QString QWindow::filePath() const
 }
 
 /*!
-    \brief set the window's \a icon in the windowing system
+    \brief Sets the window's \a icon in the windowing system
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
@@ -608,7 +608,7 @@ void QWindow::setIcon(const QIcon &icon)
 }
 
 /*!
-    \brief set the window's icon in the windowing system
+    \brief Sets the window's icon in the windowing system
 
     \sa setIcon()
 */
@@ -643,7 +643,8 @@ void QWindow::lower()
 }
 
 /*!
-    Sets the window's opacity in the windowing system to \a level.
+    \property QWindow::opacity
+    \brief The opacity of the window in the windowing system.
 
     If the windowing system supports window opacity, this can be used to fade the
     window in and out, or to make it semitransparent.
@@ -651,15 +652,25 @@ void QWindow::lower()
     A value of 1.0 or above is treated as fully opaque, whereas a value of 0.0 or below
     is treated as fully transparent. Values inbetween represent varying levels of
     translucency between the two extremes.
+
+    The default value is 1.0.
 */
 void QWindow::setOpacity(qreal level)
 {
     Q_D(QWindow);
-    if (level == d->opacity) // #fixme: Add property for 5.1
+    if (level == d->opacity)
         return;
     d->opacity = level;
-    if (d->platformWindow)
+    if (d->platformWindow) {
         d->platformWindow->setOpacity(level);
+        emit opacityChanged(level);
+    }
+}
+
+qreal QWindow::opacity() const
+{
+    Q_D(const QWindow);
+    return d->opacity;
 }
 
 /*!
@@ -766,8 +777,7 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 
     Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
-    \sa QWindow::devicePixelRatio();
-    \sa QGuiApplicaiton::devicePixelRatio();
+    \sa QScreen::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
 qreal QWindow::devicePixelRatio() const
 {
@@ -1214,14 +1224,14 @@ void QWindow::setPosition(int posx, int posy)
 
 /*!
     \fn QPoint QWindow::position() const
-    \brief get the position of the window on the desktop excluding any window frame
+    \brief Returns the position of the window on the desktop excluding any window frame
 
     \sa setPosition()
 */
 
 /*!
     \fn QSize QWindow::size() const
-    \brief get the size of the window excluding any window frame
+    \brief Returns the size of the window excluding any window frame
 
     \sa resize()
 */
@@ -1300,7 +1310,7 @@ QPlatformSurface *QWindow::surfaceHandle() const
 }
 
 /*!
-    Set whether keyboard grab should be enabled or not (\a grab).
+    Sets whether keyboard grab should be enabled or not (\a grab).
 
     If the return value is true, the window receives all key events until
     setKeyboardGrabEnabled(false) is called; other windows get no key events at
@@ -1453,13 +1463,15 @@ QObject *QWindow::focusObject() const
     Shows the window.
 
     This equivalent to calling showFullScreen() or showNormal(), depending
-    on whether the platform defaults to windows being fullscreen or not.
+    on whether the platform defaults to windows being fullscreen or not, and
+    whether the window is a popup.
 
-    \sa showFullScreen(), showNormal(), hide(), QStyleHints::showIsFullScreen()
+    \sa showFullScreen(), showNormal(), hide(), QStyleHints::showIsFullScreen(), flags()
 */
 void QWindow::show()
 {
-    if (qApp->styleHints()->showIsFullScreen())
+    bool isPopup = d_func()->windowFlags & Qt::Popup & ~Qt::Window;
+    if (!isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
     else
         showNormal();
@@ -1963,13 +1975,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 void QWindow::setCursor(const QCursor &cursor)
 {
     Q_D(QWindow);
-    d->cursor = cursor;
-    // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    if (d->screen->handle()->cursor()) {
-        d->applyCursor();
-        QEvent event(QEvent::CursorChange);
-        QGuiApplication::sendEvent(this, &event);
-    }
+    d->setCursor(&cursor);
 }
 
 /*!
@@ -1977,7 +1983,8 @@ void QWindow::setCursor(const QCursor &cursor)
  */
 void QWindow::unsetCursor()
 {
-    setCursor(Qt::ArrowCursor);
+    Q_D(QWindow);
+    d->setCursor(0);
 }
 
 /*!
@@ -1991,14 +1998,39 @@ QCursor QWindow::cursor() const
     return d->cursor;
 }
 
+void QWindowPrivate::setCursor(const QCursor *newCursor)
+{
+
+    Q_Q(QWindow);
+    if (newCursor) {
+        const Qt::CursorShape newShape = newCursor->shape();
+        if (newShape <= Qt::LastCursor && hasCursor && newShape == cursor.shape())
+            return; // Unchanged and no bitmap/custom cursor.
+        cursor = *newCursor;
+        hasCursor = true;
+    } else {
+        if (!hasCursor)
+            return;
+        cursor = QCursor(Qt::ArrowCursor);
+        hasCursor = false;
+    }
+    // Only attempt to set cursor and emit signal if there is an actual platform cursor
+    if (screen->handle()->cursor()) {
+        applyCursor();
+        QEvent event(QEvent::CursorChange);
+        QGuiApplication::sendEvent(q, &event);
+    }
+}
+
 void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
     if (platformWindow) {
         if (QPlatformCursor *platformCursor = screen->handle()->cursor()) {
-            QCursor *oc = QGuiApplication::overrideCursor();
-            QCursor c = oc ? *oc : cursor;
-            platformCursor->changeCursor(&c, q);
+            QCursor *c = QGuiApplication::overrideCursor();
+            if (!c && hasCursor)
+                c = &cursor;
+            platformCursor->changeCursor(c, q);
         }
     }
 }

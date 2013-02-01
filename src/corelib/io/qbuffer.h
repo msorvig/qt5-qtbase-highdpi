@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <QtCore/qiodevice.h>
 #include <QtCore/qbytearray.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -105,7 +103,5 @@ inline void QBuffer::setData(const char *adata, int alen)
 { setData(QByteArray(adata, alen)); }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QBUFFER_H

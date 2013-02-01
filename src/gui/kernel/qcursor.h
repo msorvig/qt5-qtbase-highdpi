@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <QtCore/qpoint.h>
 #include <QtGui/qwindowdefs.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -129,7 +127,5 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QCursor &);
 #endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCURSOR_H

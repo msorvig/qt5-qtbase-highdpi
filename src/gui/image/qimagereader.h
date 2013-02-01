@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -45,8 +45,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qimageiohandler.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -133,6 +131,7 @@ public:
     static QByteArray imageFormat(const QString &fileName);
     static QByteArray imageFormat(QIODevice *device);
     static QList<QByteArray> supportedImageFormats();
+    static QList<QByteArray> supportedMimeTypes();
 
 private:
     Q_DISABLE_COPY(QImageReader)
@@ -140,7 +139,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QIMAGEREADER_H

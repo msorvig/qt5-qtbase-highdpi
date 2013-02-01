@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -59,7 +59,7 @@ extern Q_DBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const
 static inline QString typeNameToXml(const char *typeName)
 {
     // ### copied from qtextdocument.cpp
-    // ### move this into QtCore at some point
+    // ### move this into Qt Core at some point
     QString plain = QLatin1String(typeName);
     QString rich;
     rich.reserve(int(plain.length() * 1.1));

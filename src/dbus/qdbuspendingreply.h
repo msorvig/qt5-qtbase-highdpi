@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -48,8 +48,6 @@
 #include <QtDBus/qdbuspendingcall.h>
 
 #ifndef QT_NO_DBUS
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -168,9 +166,7 @@ public:
     template<int Index> inline
     const typename Select<Index>::Type argumentAt() const
     {
-        // static assert?
-        Q_ASSERT_X(Index < count() && Index >= 0, "QDBusPendingReply::argumentAt",
-                   "Index out of bounds");
+        Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
         typedef typename Select<Index>::Type ResultType;
         return qdbus_cast<ResultType>(argumentAt(Index), 0);
     }
@@ -209,8 +205,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

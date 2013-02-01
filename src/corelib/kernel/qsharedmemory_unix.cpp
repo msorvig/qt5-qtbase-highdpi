@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -151,9 +151,6 @@ key_t QSharedMemoryPrivate::handle()
   */
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
-    if (QFile::exists(fileName))
-        return 0;
-
     int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {
@@ -197,7 +194,7 @@ bool QSharedMemoryPrivate::create(int size)
     }
 
     // create
-    if (-1 == shmget(unix_key, size, 0666 | IPC_CREAT | IPC_EXCL)) {
+    if (-1 == shmget(unix_key, size, 0600 | IPC_CREAT | IPC_EXCL)) {
         QString function = QLatin1String("QSharedMemory::create");
         switch (errno) {
         case EINVAL:
@@ -218,7 +215,7 @@ bool QSharedMemoryPrivate::create(int size)
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
     // grab the shared memory segment id
-    int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0444 : 0660));
+    int id = shmget(unix_key, 0, (mode == QSharedMemory::ReadOnly ? 0400 : 0600));
     if (-1 == id) {
         setErrorString(QLatin1String("QSharedMemory::attach (shmget)"));
         return false;
@@ -263,7 +260,7 @@ bool QSharedMemoryPrivate::detach()
     size = 0;
 
     // Get the number of current attachments
-    int id = shmget(unix_key, 0, 0444);
+    int id = shmget(unix_key, 0, 0400);
     cleanHandle();
 
     struct shmid_ds shmid_ds;

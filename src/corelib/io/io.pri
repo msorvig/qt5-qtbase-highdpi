@@ -22,10 +22,13 @@ HEADERS +=  \
         io/qprocess.h \
         io/qprocess_p.h \
         io/qtextstream.h \
+        io/qtextstream_p.h \
         io/qtemporarydir.h \
         io/qtemporaryfile.h \
+        io/qtemporaryfile_p.h \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
+        io/qsavefile.h \
         io/qstandardpaths.h \
         io/qurl.h \
         io/qurl_p.h \
@@ -65,6 +68,7 @@ SOURCES += \
         io/qtemporaryfile.cpp \
         io/qresource.cpp \
         io/qresource_iterator.cpp \
+        io/qsavefile.cpp \
         io/qstandardpaths.cpp \
         io/qurl.cpp \
         io/qurlidna.cpp \

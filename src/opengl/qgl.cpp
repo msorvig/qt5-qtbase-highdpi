@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -2041,11 +2041,6 @@ static inline QRgb qt_gl_convertToGLFormatHelper(QRgb src_pixel, GLenum texture_
     }
 }
 
-QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format)
-{
-    return qt_gl_convertToGLFormatHelper(src_pixel, texture_format);
-}
-
 static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum texture_format)
 {
     Q_ASSERT(dst.depth() == 32);
@@ -2137,18 +2132,6 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
 QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
 {
     return qt_extensionFuncs;
-}
-
-QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_premul,
-                                            GLenum texture_format)
-{
-    QImage::Format target_format = image.format();
-    if (force_premul || image.format() != QImage::Format_ARGB32)
-        target_format = QImage::Format_ARGB32_Premultiplied;
-
-    QImage result(image.width(), image.height(), target_format);
-    convertToGLFormatHelper(result, image.convertToFormat(target_format), texture_format);
-    return result;
 }
 
 /*! \internal */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -101,6 +101,16 @@
     Constructs an empty set.
 
     \sa clear()
+*/
+
+/*! \fn QSet::QSet(std::initializer_list<T> list)
+    \since 5.1
+
+    Constructs a set with a copy of each of the elements in the
+    initializer list \a list.
+
+    This function is only available if the program is being
+    compiled in C++11 mode.
 */
 
 /*!

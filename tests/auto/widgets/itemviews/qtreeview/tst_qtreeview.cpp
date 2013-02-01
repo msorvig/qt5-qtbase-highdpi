@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -177,6 +177,7 @@ private slots:
     void emptyModel();
     void removeRows();
     void removeCols();
+    void limitedExpand();
     void expandAndCollapse_data();
     void expandAndCollapse();
     void expandAndCollapseAll();
@@ -256,6 +257,7 @@ private slots:
     void taskQTBUG_13567_removeLastItemRegression();
     void taskQTBUG_25333_adjustViewOptionsForIndex();
     void taskQTBUG_18539_emitLayoutChanged();
+    void taskQTBUG_8176_emitOnExpandAll();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -1414,6 +1416,45 @@ void tst_QTreeView::removeCols()
     QCOMPARE(view.header()->count(), model.cols);
 }
 
+void tst_QTreeView::limitedExpand()
+{
+    {
+        QStandardItemModel model;
+        QStandardItem *parentItem = model.invisibleRootItem();
+        parentItem->appendRow(new QStandardItem);
+        parentItem->appendRow(new QStandardItem);
+        parentItem->appendRow(new QStandardItem);
+
+        QStandardItem *firstItem = model.item(0, 0);
+        firstItem->setFlags(firstItem->flags() | Qt::ItemNeverHasChildren);
+
+        QTreeView view;
+        view.setModel(&model);
+
+        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QVERIFY(spy.isValid());
+
+        view.expand(model.index(0, 0));
+        QCOMPARE(spy.count(), 0);
+
+        view.expand(model.index(1, 0));
+        QCOMPARE(spy.count(), 1);
+    }
+    {
+        QStringListModel model(QStringList() << "one" << "two");
+        QTreeView view;
+        view.setModel(&model);
+
+        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QVERIFY(spy.isValid());
+
+        view.expand(model.index(0, 0));
+        QCOMPARE(spy.count(), 0);
+        view.expandAll();
+        QCOMPARE(spy.count(), 0);
+    }
+}
+
 void tst_QTreeView::expandAndCollapse_data()
 {
     QTest::addColumn<bool>("animationEnabled");
@@ -1581,12 +1622,9 @@ void tst_QTreeView::expandAndCollapseAll()
         for (int r = 0; r < rows; ++r)
             parents.push(model.index(r, 0, p));
     }
-// ### why is expanded() signal not emitted?
-//    QCOMPARE(expandedSpy.count(), count);
+    QCOMPARE(expandedSpy.count(), 12); // == (3+1)*(2+1) from QtTestModel model(3, 2);
 
     view.collapseAll();
-
-    QCOMPARE(expandedSpy.count(), 0);
 
     parents.push(QModelIndex());
     count = 0;
@@ -1599,8 +1637,7 @@ void tst_QTreeView::expandAndCollapseAll()
         for (int r = 0; r < rows; ++r)
             parents.push(model.index(r, 0, p));
     }
-// ### why is collapsed() signal not emitted?
-//    QCOMPARE(collapsedSpy.count(), count);
+    QCOMPARE(collapsedSpy.count(), 12);
 }
 
 void tst_QTreeView::expandWithNoChildren()
@@ -4156,6 +4193,38 @@ void tst_QTreeView::taskQTBUG_18539_emitLayoutChanged()
 
     QCOMPARE(beforeRISpy.size(), 0);
     QCOMPARE(afterRISpy.size(), 0);
+}
+
+void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
+{
+    QTreeWidget tw;
+    QTreeWidgetItem *item = new QTreeWidgetItem(&tw, QStringList(QString("item 1")));
+    QTreeWidgetItem *item2 = new QTreeWidgetItem(item, QStringList(QString("item 2")));
+    new QTreeWidgetItem(item2, QStringList(QString("item 3")));
+    new QTreeWidgetItem(item2, QStringList(QString("item 4")));
+    QTreeWidgetItem *item5 = new QTreeWidgetItem(&tw, QStringList(QString("item 5")));
+    new QTreeWidgetItem(item5, QStringList(QString("item 6")));
+    QSignalSpy spy(&tw, SIGNAL(expanded(const QModelIndex&)));
+
+    // expand all
+    tw.expandAll();
+    QCOMPARE(spy.size(), 6);
+    spy.clear();
+    tw.collapseAll();
+    item2->setExpanded(true);
+    spy.clear();
+    tw.expandAll();
+    QCOMPARE(spy.size(), 5);
+
+    // collapse all
+    QSignalSpy spy2(&tw, SIGNAL(collapsed(const QModelIndex&)));
+    tw.collapseAll();
+    QCOMPARE(spy2.size(), 6);
+    tw.expandAll();
+    item2->setExpanded(false);
+    spy2.clear();
+    tw.collapseAll();
+    QCOMPARE(spy2.size(), 5);
 }
 
 #ifndef QT_NO_ANIMATION

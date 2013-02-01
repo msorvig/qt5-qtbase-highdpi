@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -46,8 +46,6 @@
 #include <QtCore/QList>
 #include <QtCore/QMetaType>
 #include <QtCore/QObject>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -120,7 +118,5 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkCookie)
-
-QT_END_HEADER
 
 #endif

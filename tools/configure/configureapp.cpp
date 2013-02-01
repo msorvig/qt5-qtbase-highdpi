@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -1650,8 +1650,12 @@ bool Configure::displayHelp()
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module.\n");
 
-        desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
-        desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
+        desc("ACCESSIBILITY", "no", "-no-accessibility", "Disable accessibility support.\n");
+        desc(                   "",                      "Disabling accessibility is not recommended, as it will break QStyle\n"
+                                                         "and may break other internal parts of Qt.\n"
+                                                         "With this switch you create a source incompatible version of Qt,\n"
+                                                         "which is unsupported.\n");
+        desc("ACCESSIBILITY", "yes", "-accessibility",   "Enable accessibility support.\n");
 
         desc(                   "-no-sql-<driver>",     "Disable SQL <driver> entirely, by default none are turned on.");
         desc(                   "-qt-sql-<driver>",     "Enable a SQL <driver> in the Qt Library.");
@@ -3042,7 +3046,7 @@ void Configure::generateQConfigPri()
             configStream << " slog2";
 
         if (dictionary["DIRECTWRITE"] == "yes")
-            configStream << "directwrite";
+            configStream << " directwrite";
 
         // ### For compatibility only, should be removed later.
         configStream << " qpa";
@@ -3313,18 +3317,18 @@ void Configure::displayConfig()
 
     // Give some feedback
     sout << "Environment:" << endl;
-    QString env = QString::fromLocal8Bit(getenv("INCLUDE")).replace(QRegExp("[;,]"), "\r\n      ");
+    QString env = QString::fromLocal8Bit(getenv("INCLUDE")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    INCLUDE=\r\n      " << env << endl;
-    env = QString::fromLocal8Bit(getenv("LIB")).replace(QRegExp("[;,]"), "\r\n      ");
+    sout << "    INCLUDE=\n      " << env << endl;
+    env = QString::fromLocal8Bit(getenv("LIB")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    LIB=\r\n      " << env << endl;
-    env = QString::fromLocal8Bit(getenv("PATH")).replace(QRegExp("[;,]"), "\r\n      ");
+    sout << "    LIB=\n      " << env << endl;
+    env = QString::fromLocal8Bit(getenv("PATH")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    PATH=\r\n      " << env << endl;
+    sout << "    PATH=\n      " << env << endl;
 
     if (dictionary[QStringLiteral("EDITION")] != QStringLiteral("OpenSource")) {
         QString l1 = licenseInfo[ "LICENSEE" ];
@@ -3338,9 +3342,9 @@ void Configure::displayConfig()
     }
 
     sout << "Configuration:" << endl;
-    sout << "    " << qmakeConfig.join("\r\n    ") << endl;
+    sout << "    " << qmakeConfig.join("\n    ") << endl;
     sout << "Qt Configuration:" << endl;
-    sout << "    " << qtConfig.join("\r\n    ") << endl;
+    sout << "    " << qtConfig.join("\n    ") << endl;
     sout << endl;
 
     if (dictionary.contains("XQMAKESPEC"))

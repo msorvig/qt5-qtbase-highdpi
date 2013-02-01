@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -238,7 +238,7 @@ private slots:
 #ifdef QT_USE_ICU
     void toUpperLower_icu();
 #endif
-#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if !defined(QT_NO_UNICODE_LITERAL) && defined(Q_COMPILER_LAMBDA)
     void literals();
 #endif
     void eightBitLiterals_data();
@@ -1003,10 +1003,12 @@ void tst_QString::sprintf()
     a.sprintf("%s%n%s", "hello", &n1, "goodbye");
     QCOMPARE(n1, 5);
     QCOMPARE(a, QString("hellogoodbye"));
+#ifndef Q_CC_MINGW // does not know %ll
     qlonglong n2;
     a.sprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz");
     QCOMPARE((int)n2, 6);
     QCOMPARE(a, QString("foobarwhiz"));
+#endif
 }
 
 /*
@@ -1424,6 +1426,55 @@ void tst_QString::contains()
     QVERIFY(a.contains(QRegExp("[G][HE]")));
     QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
     QVERIFY(a.contains(QRegularExpression("[G][HE]")));
+
+    {
+        QRegularExpressionMatch match;
+        QVERIFY(!match.hasMatch());
+
+        QVERIFY(a.contains(QRegularExpression("[FG][HI]"), &match));
+        QVERIFY(match.hasMatch());
+        QCOMPARE(match.capturedStart(), 6);
+        QCOMPARE(match.capturedEnd(), 8);
+        QCOMPARE(match.captured(), QStringLiteral("GH"));
+
+        QVERIFY(a.contains(QRegularExpression("[G][HE]"), &match));
+        QVERIFY(match.hasMatch());
+        QCOMPARE(match.capturedStart(), 6);
+        QCOMPARE(match.capturedEnd(), 8);
+        QCOMPARE(match.captured(), QStringLiteral("GH"));
+
+        QVERIFY(a.contains(QRegularExpression("[f](.*)[FG]"), &match));
+        QVERIFY(match.hasMatch());
+        QCOMPARE(match.capturedStart(), 10);
+        QCOMPARE(match.capturedEnd(), 15);
+        QCOMPARE(match.captured(), QString("fGEFG"));
+        QCOMPARE(match.capturedStart(1), 11);
+        QCOMPARE(match.capturedEnd(1), 14);
+        QCOMPARE(match.captured(1), QStringLiteral("GEF"));
+
+        QVERIFY(a.contains(QRegularExpression("[f](.*)[F]"), &match));
+        QVERIFY(match.hasMatch());
+        QCOMPARE(match.capturedStart(), 10);
+        QCOMPARE(match.capturedEnd(), 14);
+        QCOMPARE(match.captured(), QString("fGEF"));
+        QCOMPARE(match.capturedStart(1), 11);
+        QCOMPARE(match.capturedEnd(1), 13);
+        QCOMPARE(match.captured(1), QStringLiteral("GE"));
+
+        QVERIFY(!a.contains(QRegularExpression("ZZZ"), &match));
+        // doesn't match, but ensure match didn't change
+        QVERIFY(match.hasMatch());
+        QCOMPARE(match.capturedStart(), 10);
+        QCOMPARE(match.capturedEnd(), 14);
+        QCOMPARE(match.captured(), QStringLiteral("fGEF"));
+        QCOMPARE(match.capturedStart(1), 11);
+        QCOMPARE(match.capturedEnd(1), 13);
+        QCOMPARE(match.captured(1), QStringLiteral("GE"));
+
+        // don't crash with a null pointer
+        QVERIFY(a.contains(QRegularExpression("[FG][HI]"), 0));
+        QVERIFY(!a.contains(QRegularExpression("ZZZ"), 0));
+    }
 
     CREATE_REF(QLatin1String("FG"));
     QVERIFY(a.contains(ref));
@@ -2358,7 +2409,7 @@ void tst_QString::remove_uint_uint()
         s1.remove( (uint) index, (uint) len );
         QTEST( s1, "result" );
     } else
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
 }
 
 void tst_QString::remove_string()
@@ -2397,7 +2448,7 @@ void tst_QString::remove_string()
         s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
         QTEST( s5, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -2416,7 +2467,7 @@ void tst_QString::remove_regexp()
         s2.remove( QRegularExpression(regexp) );
         QTEST( s2, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -3727,7 +3778,7 @@ void tst_QString::fromLatin1Roundtrip()
     QFETCH(QByteArray, latin1);
     QFETCH(QString, unicode);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicode.isNull());
     QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
     QCOMPARE(latin1.length(), unicode.length());
@@ -3782,7 +3833,7 @@ void tst_QString::toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3817,7 +3868,7 @@ void tst_QString::stringRef_toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3883,8 +3934,8 @@ void tst_QString::fromAscii()
 void tst_QString::arg()
 {
 /*
-    Warning: If any of these test fails, the warning given by QtTest
-    is all messed up, because QtTest itself uses QString::arg().
+    Warning: If any of these test fails, the warning given by Qt Test
+    is all messed up, because Qt Test itself uses QString::arg().
 */
 
     QLocale::setDefault(QString("de_DE"));
@@ -5187,6 +5238,9 @@ void tst_QString::QCharRefDetaching() const
 
 void tst_QString::sprintfZU() const
 {
+#ifdef Q_CC_MINGW
+    QSKIP("MinGW does not support '%zu'.");
+#else
     {
         QString string;
         size_t s = 6;
@@ -5215,6 +5269,7 @@ void tst_QString::sprintfZU() const
         string.sprintf("%zu %s\n", s, "foo");
         QCOMPARE(string, QString::fromLatin1("6 foo\n"));
     }
+#endif // !Q_CC_MINGW
 }
 
 void tst_QString::repeatedSignature() const
@@ -5382,7 +5437,7 @@ void tst_QString::toUpperLower_icu()
 }
 #endif
 
-#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if !defined(QT_NO_UNICODE_LITERAL) && defined(Q_COMPILER_LAMBDA)
 // Only tested on c++0x compliant compiler or gcc
 void tst_QString::literals()
 {

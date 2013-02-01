@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -501,7 +501,7 @@ static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
     insertEnvironmentVariable(QStringLiteral("PATH"), result);
-    // Preserve DISPLAY for X11 as some tests use QtGui.
+    // Preserve DISPLAY for X11 as some tests use Qt GUI.
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     insertEnvironmentVariable(QStringLiteral("DISPLAY"), result);
 #endif
@@ -563,6 +563,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         && subdir != QLatin1String("cmptest") // QImage comparison requires QGuiApplication
         && subdir != QLatin1String("fetchbogus")
         && subdir != QLatin1String("xunit")
+#ifdef Q_CC_MINGW
+        && subdir != QLatin1String("silent") // calls qFatal()
+#endif
         && subdir != QLatin1String("benchlibcallgrind"))
         QVERIFY2(err.isEmpty(), err.constData());
 
@@ -570,8 +573,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         QString logger = loggers[n];
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         QList<QByteArray> exp = expectedResult(subdir, logger);
-#ifdef Q_CC_MSVC
-        // MSVC formats double numbers differently
+#if defined (Q_CC_MSVC) || defined(Q_CC_MINGW)
+        // MSVC, MinGW format double numbers differently
         if (n == 0 && subdir == QStringLiteral("float")) {
             for (int i = 0; i < exp.size(); ++i) {
                 exp[i].replace("e-07", "e-007");

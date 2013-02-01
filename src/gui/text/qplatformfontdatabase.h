@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -59,8 +59,6 @@
 #include <QtGui/QFontDatabase>
 #include <QtGui/private/qfont_p.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -98,9 +96,9 @@ class Q_GUI_EXPORT QPlatformFontDatabase
 public:
     virtual ~QPlatformFontDatabase();
     virtual void populateFontDatabase();
-    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QUnicodeTables::Script script);
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
-    virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
+    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
 
@@ -124,7 +122,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMFONTDATABASE_H

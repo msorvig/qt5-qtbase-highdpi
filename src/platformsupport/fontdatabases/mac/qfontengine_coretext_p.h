@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -54,8 +54,6 @@
 
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QRawFontPrivate;
@@ -98,15 +96,31 @@ public:
     virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition);
+    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
     virtual QFixed emSquareSize() const;
 
-    bool supportsTransformations(const QTransform &transform) const;
+    bool supportsTransformation(const QTransform &transform) const;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
     virtual int glyphMargin(QFontEngineGlyphCache::Type type) { Q_UNUSED(type); return 0; }
+
+    static bool supportsColorGlyphs()
+    {
+#if defined(Q_OS_IOS)
+        return true;
+#elif MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+  #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+        return &CTFontDrawGlyphs;
+  #else
+        return true;
+  #endif
+#else
+        return false;
+#endif
+    }
 
     static int antialiasingThreshold;
     static QFontEngineGlyphCache::Type defaultGlyphFormat;
@@ -126,8 +140,6 @@ private:
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 

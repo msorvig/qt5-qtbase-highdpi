@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -31,7 +31,7 @@
     \ingroup modules
     \ingroup technology-apis
 
-    \brief The QtOpenGL module offers classes that make it easy to
+    \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
 
     \warning Apart from the \l{QGLWidget} class, this module should not be used

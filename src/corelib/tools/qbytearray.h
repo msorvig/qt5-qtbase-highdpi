@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -65,8 +65,6 @@
 
 #endif
 
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -609,8 +607,6 @@ inline QByteArray qUncompress(const QByteArray& data)
 Q_DECLARE_SHARED(QByteArray)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #ifdef QT_USE_QSTRINGBUILDER
 #include <QtCore/qstring.h>

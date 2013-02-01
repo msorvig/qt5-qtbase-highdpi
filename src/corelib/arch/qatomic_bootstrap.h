@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -45,15 +45,11 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #pragma qt_sync_stop_processing
 #endif
 
@@ -97,7 +93,5 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_BOOTSTRAP_H

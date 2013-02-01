@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -46,14 +46,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(),
+QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(target),
     _delay(0), _duration(-1), _startTime(QTime::currentTime())
 {
-    if (target) {
-        moveToThread(target->thread());
-        setParent(target);
-    }
-    connect(this, SIGNAL(finished()), SLOT(deleteLater()));
 }
 
 QStyleAnimation::~QStyleAnimation()

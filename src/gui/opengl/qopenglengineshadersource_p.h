@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -55,8 +55,6 @@
 #define QOPENGL_ENGINE_SHADER_SOURCE_H
 
 #include "qopenglengineshadermanager_p.h"
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -522,7 +520,5 @@ static const char* const qopenglslRgbMaskFragmentShaderPass2 = "\n\
 */
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // GLGC_SHADER_SOURCE_H

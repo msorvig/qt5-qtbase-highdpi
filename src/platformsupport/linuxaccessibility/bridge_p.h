@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -48,7 +48,6 @@
 
 class DeviceEventControllerAdaptor;
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class DBusConnection;
@@ -62,24 +61,24 @@ public:
     QSpiAccessibleBridge();
 
     virtual ~QSpiAccessibleBridge();
-    virtual void setRootObject(QObject *obj);
 
     virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
     QDBusConnection dBusConnection() const;
 
+public Q_SLOTS:
+    void enabledChanged(bool enabled);
+
 private:
     void initializeConstantMappings();
+    void updateStatus();
 
     QSpiDBusCache *cache;
     DeviceEventControllerAdaptor *dec;
-
     AtSpiAdaptor *dbusAdaptor;
-
     DBusConnection* dbusConnection;
-    bool initialized;
+    bool m_enabled;
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif

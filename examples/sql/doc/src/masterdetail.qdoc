@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -38,7 +38,7 @@
 
     The example also shows how to add as well as remove data from both
     the database and the associated XML file using the API provided by
-    the QtSql and QtXml modules, respectively.
+    the Qt SQL and Qt XML modules, respectively.
 
     \image masterdetail-example.png
 */

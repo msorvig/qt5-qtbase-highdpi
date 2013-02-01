@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -231,8 +231,8 @@ public:
 
     QPoint coordinateOffset() const;
 
-    bool supportsTransformations(QFontEngine *fontEngine) const;
-    bool supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const;
+    bool requiresPretransformedGlyphPositions(QFontEngine *fontEngine, const QTransform &m) const;
+    bool shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const;
 
 protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);

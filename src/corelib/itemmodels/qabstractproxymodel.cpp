@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -145,6 +145,15 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
         d->roleNames = d->model->roleNames();
         emit sourceModelChanged(QPrivateSignal());
     }
+}
+
+/*!
+    Clears the roleNames of this proxy model.
+*/
+void QAbstractProxyModel::resetInternalData()
+{
+    Q_D(QAbstractProxyModel);
+    d->roleNames = d->model->roleNames();
 }
 
 /*!

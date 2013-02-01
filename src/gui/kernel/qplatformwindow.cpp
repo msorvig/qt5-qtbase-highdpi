@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -201,7 +201,13 @@ bool QPlatformWindow::isEmbedded(const QPlatformWindow *parentWindow) const
 */
 QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
 {
-    return pos;
+    const QPlatformWindow *p = this;
+    QPoint result = pos;
+    while (p) {
+        result += p->geometry().topLeft();
+        p = p->parent();
+    }
+    return result;
 }
 
 /*!
@@ -213,7 +219,13 @@ QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
 */
 QPoint QPlatformWindow::mapFromGlobal(const QPoint &pos) const
 {
-    return pos;
+    const QPlatformWindow *p = this;
+    QPoint result = pos;
+    while (p) {
+        result -= p->geometry().topLeft();
+        p = p->parent();
+    }
+    return result;
 }
 
 /*!

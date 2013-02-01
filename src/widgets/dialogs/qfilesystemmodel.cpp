@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -964,6 +964,8 @@ Qt::ItemFlags QFileSystemModel::flags(const QModelIndex &index) const
         flags |= Qt::ItemIsEditable;
         if (indexNode->isDir())
             flags |= Qt::ItemIsDropEnabled;
+        else
+            flags |= Qt::ItemNeverHasChildren;
     }
     return flags;
 }

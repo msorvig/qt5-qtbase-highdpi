@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 #ifndef QOBJECT_H
 #error Do not include qobject_impl.h directly
 #endif
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -206,7 +204,5 @@ namespace QtPrivate {
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

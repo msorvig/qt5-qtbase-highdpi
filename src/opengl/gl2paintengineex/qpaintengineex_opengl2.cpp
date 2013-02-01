@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -626,6 +626,16 @@ bool QGL2PaintEngineEx::isNativePaintingActive() const {
     return d->nativePaintingActive;
 }
 
+bool QGL2PaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &t) const
+{
+    float det = t.determinant();
+
+    // Don't try to cache huge fonts or vastly transformed fonts
+    return t.type() < QTransform::TxProject
+        && QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, t)
+        && det >= 0.25f && det <= 4.f;
+}
+
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 {
     if (newMode == mode)
@@ -1076,6 +1086,20 @@ void QGL2PaintEngineExPrivate::resetClipIfNeeded()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
+bool QGL2PaintEngineExPrivate::prepareForCachedGlyphDraw(const QFontEngineGlyphCache &cache)
+{
+    Q_Q(QGL2PaintEngineEx);
+
+    Q_ASSERT(cache.transform().type() <= QTransform::TxScale);
+
+    QTransform &transform = q->state()->matrix;
+    transform.scale(1.0 / cache.transform().m11(), 1.0 / cache.transform().m22());
+    bool ret = prepareForDraw(false);
+    transform.scale(cache.transform().m11(), cache.transform().m22());
+
+    return ret;
+}
+
 bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 {
     if (brushTextureDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
@@ -1439,11 +1463,10 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     ensureActive();
 
     QPainterState *s = state();
-    float det = s->matrix.determinant();
 
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (shouldDrawCachedGlyphs(fontEngine, s->matrix) && det >= 0.25f && det <= 4.f) {
+    if (shouldDrawCachedGlyphs(fontEngine, s->matrix)) {
         QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
@@ -1497,13 +1520,6 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     QTransform::TransformationType txtype = s->matrix.type();
 
-    float det = s->matrix.determinant();
-    bool drawCached = txtype < QTransform::TxProject;
-
-    // don't try to cache huge fonts or vastly transformed fonts
-    if (!shouldDrawCachedGlyphs(ti.fontEngine, s->matrix) || det < 0.25f || det > 4.f)
-        drawCached = false;
-
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
@@ -1519,7 +1535,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         }
     }
 
-    if (drawCached) {
+    if (shouldDrawCachedGlyphs(ti.fontEngine, s->matrix)) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
         QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
@@ -1578,11 +1594,19 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
     bool recreateVertexArrays = false;
 
+    // We allow scaling, so that the glyph-cache will contain glyphs with the
+    // appropriate resolution in the case of displays with a device-pixel-ratio != 1.
+    QTransform transform = s->matrix.type() < QTransform::TxRotate ?
+        QTransform::fromScale(qAbs(s->matrix.m11()), qAbs(s->matrix.m22())) :
+        QTransform::fromScale(
+            QVector2D(s->matrix.m11(), s->matrix.m12()).length(),
+            QVector2D(s->matrix.m21(), s->matrix.m22()).length());
+
     QFontEngine *fe = staticTextItem->fontEngine();
     QGLTextureGlyphCache *cache =
-            (QGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, QTransform());
+            (QGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, transform);
     if (!cache || cache->cacheType() != glyphType || cache->contextGroup() == 0) {
-        cache = new QGLTextureGlyphCache(glyphType, QTransform());
+        cache = new QGLTextureGlyphCache(glyphType, transform);
         fe->setGlyphCache(cacheKey, cache);
         recreateVertexArrays = true;
     }
@@ -1674,8 +1698,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             if (c.isNull())
                 continue;
 
-            int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
-            int y = qRound(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
+            int x = qFloor(staticTextItem->glyphPositions[i].x.toReal() * cache->transform().m11()) + c.baseLineX - margin;
+            int y = qRound(staticTextItem->glyphPositions[i].y.toReal() * cache->transform().m22()) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
@@ -1748,9 +1772,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             }
 
             compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
 
-            // prepareForDraw() have set the opacity on the current shader, so the opacity state can now be reset.
+            // prepareForCachedGlyphDraw() have set the opacity on the current shader, so the opacity state can now be reset.
             if (compMode == QPainter::CompositionMode_Source) {
                 q->state()->opacity = oldOpacity;
                 opacityUniformDirty = true;
@@ -1771,7 +1795,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             }
 
             compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
@@ -1795,7 +1819,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             }
 
             compositionModeDirty = false;
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
             glEnable(GL_BLEND);
             glBlendFunc(GL_ONE, GL_ONE);
         }
@@ -1804,7 +1828,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         // Greyscale/mono glyphs
 
         shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
-        prepareForDraw(false); // Text always causes src pixels to be transparent
+        prepareForCachedGlyphDraw(*cache);
     }
 
     QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;

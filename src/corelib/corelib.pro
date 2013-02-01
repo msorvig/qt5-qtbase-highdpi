@@ -50,7 +50,7 @@ QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
 
-HOST_BINS = $$[QT_HOST_BINS]
+HOST_BINS = $$[QT_HOST_BINS/raw]
 host_bins.name = host_bins
 host_bins.variable = HOST_BINS
 
@@ -60,10 +60,16 @@ ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
 ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake
 ctest_macros_file.CONFIG = verbatim
 
-QMAKE_SUBSTITUTES += ctest_macros_file
+cmake_umbrella_config_file.input = $$PWD/Qt5Config.cmake.in
+cmake_umbrella_config_file.output = $$DESTDIR/cmake/Qt5/Qt5Config.cmake
+
+cmake_qt5_umbrella_module_files.files = $$cmake_umbrella_config_file.output
+cmake_qt5_umbrella_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5
+
+QMAKE_SUBSTITUTES += ctest_macros_file cmake_umbrella_config_file
 
 ctest_qt5_module_files.files += $$ctest_macros_file.output
 
 ctest_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5Core
 
-INSTALLS += ctest_qt5_module_files
+INSTALLS += ctest_qt5_module_files cmake_qt5_umbrella_module_files

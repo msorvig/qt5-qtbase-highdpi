@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -50,10 +50,8 @@
 // this header, as we have a "qt_sync_stop_processing" below, which in turn
 // is here because this file contains a template mess and duplicates the
 // classes found in qsharedpointer.h
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
-QT_END_HEADER
 #pragma qt_sync_stop_processing
 #endif
 
@@ -62,7 +60,9 @@ QT_END_HEADER
 #include <QtCore/qobject.h>    // for qobject_cast
 #include <QtCore/qhash.h>    // for qHash
 
-QT_BEGIN_HEADER
+#if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
+#  include <utility>           // for std::forward
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -389,6 +389,28 @@ public:
 
     QWeakPointer<T> toWeakRef() const;
 
+#if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
+    template <typename... Args>
+    static QSharedPointer<T> create(Args && ...arguments)
+    {
+        typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+        typename Private::DestroyerFn destroy = &Private::safetyCheckDeleter;
+# else
+        typename Private::DestroyerFn destroy = &Private::deleter;
+# endif
+        QSharedPointer<T> result(Qt::Uninitialized);
+        result.d = Private::create(&result.value, destroy);
+
+        // now initialize the data
+        new (result.data()) T(std::forward<Args>(arguments)...);
+        result.d->setQObjectShared(result.value, true);
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+        internalSafetyCheckAdd(result.d, result.value);
+# endif
+        return result;
+    }
+#else
     static inline QSharedPointer<T> create()
     {
         typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
@@ -408,6 +430,7 @@ public:
         result.d->setQObjectShared(result.value, true);
         return result;
     }
+#endif
 
 private:
     explicit QSharedPointer(Qt::Initialization) {}
@@ -861,7 +884,5 @@ template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

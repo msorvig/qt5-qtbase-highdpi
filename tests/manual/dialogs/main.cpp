@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "filedialogpanel.h"
+#include "colordialogpanel.h"
 
 #include <QMainWindow>
 #include <QApplication>
@@ -50,7 +51,7 @@
 #include <QKeySequence>
 
 // Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Currently, only QFileDialog is implemented.
+// Currently, only QFileDialog and QColorDialog are implemented.
 // Compiles with Qt 4.8 and Qt 5.
 
 class MainWindow : public QMainWindow {
@@ -68,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     QTabWidget *tabWidget = new QTabWidget;
     tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
+    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
     setCentralWidget(tabWidget);
 }
 

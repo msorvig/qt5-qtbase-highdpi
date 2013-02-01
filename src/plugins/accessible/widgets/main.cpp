@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -251,6 +251,9 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QDockWidget")) {
         iface = new QAccessibleDockWidget(widget);
 #endif
+
+    } else if (classname == QLatin1String("QDesktopScreenWidget")) {
+        iface = 0;
     } else {
         iface = new QAccessibleWidget(widget);
     }

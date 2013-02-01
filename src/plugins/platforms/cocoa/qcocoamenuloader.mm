@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -88,7 +88,7 @@ QString qt_mac_applicationmenu_string(int type)
     The reason for having the nib file is that those can not be created
     programmatically. To ease deployment the nib files are stored in Qt resources
     and written to QDir::temp() before loading. (Earlier Qt versions used
-    to require having the nib file in the QtGui framework.)
+    to require having the nib file in the Qt GUI framework.)
 */
 void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 {

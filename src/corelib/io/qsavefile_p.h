@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 David Faure <faure@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTFONTENGINE_P_H
-#define QABSTRACTFONTENGINE_P_H
+#ifndef QSAVEFILE_P_H
+#define QSAVEFILE_P_H
 
 //
 //  W A R N I N G
@@ -53,56 +53,23 @@
 // We mean it.
 //
 
-#include "qfontengine_p.h"
-#include "qabstractfontengine_qws.h"
+#include "private/qfiledevice_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QCustomFontEngine;
-
-class QProxyFontEngine : public QFontEngine
+class QSaveFilePrivate : public QFileDevicePrivate
 {
-    Q_OBJECT
-public:
-    QProxyFontEngine(QAbstractFontEngine *engine, const QFontDef &def);
-    virtual ~QProxyFontEngine();
+    Q_DECLARE_PUBLIC(QSaveFile)
 
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
-    virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
-    virtual QImage alphaMapForGlyph(glyph_t);
-    virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs, QPainterPath *path, QTextItem::RenderFlags flags);
-    virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
-    virtual glyph_metrics_t boundingBox(glyph_t glyph);
+protected:
+    QSaveFilePrivate();
+    ~QSaveFilePrivate();
 
-    virtual QFixed ascent() const;
-    virtual QFixed descent() const;
-    virtual QFixed leading() const;
-    virtual QFixed xHeight() const;
-    virtual QFixed averageCharWidth() const;
-    virtual QFixed lineThickness() const;
-    virtual QFixed underlinePosition() const;
-    virtual qreal maxCharWidth() const;
-    virtual qreal minLeftBearing() const;
-    virtual qreal minRightBearing() const;
-    virtual int glyphCount() const;
+    QString fileName;
 
-    virtual bool canRender(const QChar *string, int len);
-
-    virtual Type type() const { return Proxy; }
-    virtual const char *name() const { return "proxy engine"; }
-
-    virtual void draw(QPaintEngine *, qreal, qreal, const QTextItemInt &);
-
-    inline QAbstractFontEngine::Capabilities capabilities() const
-    { return engineCapabilities; }
-
-    bool drawAsOutline() const;
-
-private:
-    QAbstractFontEngine *engine;
-    QAbstractFontEngine::Capabilities engineCapabilities;
+    QFileDevice::FileError writeError;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QSAVEFILE_P_H

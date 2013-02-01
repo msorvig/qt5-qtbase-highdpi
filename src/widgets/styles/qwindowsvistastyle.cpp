@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1581,7 +1581,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             bool doTransition = ((state & State_Sunken)     != (oldState & State_Sunken)    ||
                                  (state & State_On)         != (oldState & State_On)        ||
                                  (state & State_MouseOver)  != (oldState & State_MouseOver) ||
-                                  oldActiveControls         != option->activeSubControls);
+                                  oldActiveControls         != int(option->activeSubControls));
 
             if (qstyleoption_cast<const QStyleOptionSlider *>(option)) {
                 QRect oldSliderPos = styleObject->property("_q_stylesliderpos").toRect();

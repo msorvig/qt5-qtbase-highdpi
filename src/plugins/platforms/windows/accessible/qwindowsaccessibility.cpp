@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -162,21 +162,10 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         }
     }
 
-    typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
-
 #if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
     // There is no user32.lib nor NotifyWinEvent for CE
     return;
 #else
-    static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
-    static bool resolvedNWE = false;
-    if (!resolvedNWE) {
-        resolvedNWE = true;
-        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
-    }
-    if (!ptrNotifyWinEvent)
-        return;
-
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = event->accessibleInterface();
@@ -190,6 +179,8 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     }
 
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    if (!window->handle()) // Called before show(), no native window yet.
+        return;
     HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
 
     static int eventNum = 0;
@@ -211,7 +202,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         eventNum %= 50;              //[0..49]
         int eventId = - (eventNum - 1);
         qAccessibleRecentSentEvents()->insert(eventId, qMakePair(QPointer<QObject>(event->object()), event->child()));
-        ptrNotifyWinEvent(event->type(), hWnd, OBJID_CLIENT, eventId);
+        ::NotifyWinEvent(event->type(), hWnd, OBJID_CLIENT, eventId);
         ++eventNum;
     }
 #endif // Q_OS_WINCE
@@ -281,7 +272,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 {
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
-    } else if ((DWORD)lParam == OBJID_CLIENT) {
+    } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
 #if 1
         // Ignoring all requests while starting up
         // ### Maybe QPA takes care of this???

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -43,8 +43,6 @@
 #define QMACSTYLE_MAC_P_H
 
 #include <QtWidgets/qcommonstyle.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -129,7 +127,5 @@ private:
 #endif // Q_WS_MAC
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMACSTYLE_MAC_P_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -48,8 +48,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -129,7 +127,5 @@ Q_DECLARE_SHARED(QNetworkConfiguration)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
-
-QT_END_HEADER
 
 #endif // QNETWORKCONFIGURATION_H

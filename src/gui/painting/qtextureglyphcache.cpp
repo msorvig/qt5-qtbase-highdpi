@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -304,6 +304,8 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
         break;   }
     case QFontEngineGlyphCache::Raster_RGBMask:
         m_image = QImage(width, height, QImage::Format_RGB32);
+        break;
+    case QFontEngineGlyphCache::Raster_ARGB:
         break;
     }
 }

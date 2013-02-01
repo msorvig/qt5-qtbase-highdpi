@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -57,8 +57,6 @@
 #include <QtGui/QKeySequence>
 #include <QtGui/QIcon>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformMenu;
@@ -103,6 +101,16 @@ public:
     virtual void setText(const QString &text) = 0;
     virtual void setEnabled(bool enabled) = 0;
     virtual void setVisible(bool visible) = 0;
+    virtual void setMinimumWidth(int width) { Q_UNUSED(width); }
+    virtual void setFont(const QFont &font) { Q_UNUSED(font); }
+
+    virtual void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
+    {
+        Q_UNUSED(parentWindow);
+        Q_UNUSED(pos);
+        Q_UNUSED(item);
+        setVisible(true);
+    }
 
     virtual QPlatformMenuItem *menuItemAt(int position) const = 0;
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const = 0;
@@ -124,8 +132,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif
 

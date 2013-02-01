@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1752,7 +1752,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             QRawFont rawFont;
             QRawFontPrivate *rawFontD = QRawFontPrivate::get(rawFont);
             QFontPrivate *fontD = QFontPrivate::get(font);
-            rawFontD->fontEngine = fontD->engineForScript(QUnicodeTables::Common);
+            rawFontD->fontEngine = fontD->engineForScript(QChar::Script_Common);
             rawFontD->fontEngine->ref.ref();
 
             QGlyphRun glyphs;

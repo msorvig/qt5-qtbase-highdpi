@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -55,38 +55,7 @@ class QAccessibleObjectPrivate
 {
 public:
     QPointer<QObject> object;
-
-    QList<QByteArray> actionList() const;
 };
-
-QList<QByteArray> QAccessibleObjectPrivate::actionList() const
-{
-    QList<QByteArray> actionList;
-
-    if (!object)
-        return actionList;
-
-    const QMetaObject *mo = object->metaObject();
-    Q_ASSERT(mo);
-
-    QByteArray defaultAction = QMetaObject::normalizedSignature(
-        mo->classInfo(mo->indexOfClassInfo("DefaultSlot")).value());
-
-    for (int i = 0; i < mo->methodCount(); ++i) {
-        const QMetaMethod member = mo->method(i);
-        if (member.methodType() != QMetaMethod::Slot && member.access() != QMetaMethod::Public)
-            continue;
-
-        if (!qstrcmp(member.tag(), "QACCESSIBLE_SLOT")) {
-            if (member.methodSignature() == defaultAction)
-                actionList.prepend(defaultAction);
-            else
-                actionList << member.methodSignature();
-        }
-    }
-
-    return actionList;
-}
 
 /*!
     \class QAccessibleObject
@@ -224,6 +193,8 @@ int QAccessibleApplication::childCount() const
 /*! \reimp */
 int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) const
 {
+    if (!child)
+        return -1;
     const QObjectList tlw(topLevelObjects());
     return tlw.indexOf(child->object());
 }

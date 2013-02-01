@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -53,8 +53,6 @@
 #if defined(Q_OS_WIN) && defined(interface)
 #undef interface
 #endif
-
-QT_BEGIN_HEADER
 
 #include <QtCore/qshareddata.h>
 QT_BEGIN_NAMESPACE
@@ -147,8 +145,6 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QNetworkSession::State)
 Q_DECLARE_METATYPE(QNetworkSession::SessionError)
 Q_DECLARE_METATYPE(QNetworkSession::UsagePolicies)
-
-QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -315,7 +315,7 @@ namespace QDBusUtil
     /*!
         \internal
         \since 4.5
-        Dumps the contents of a QtDBus argument from \a arg into a string.
+        Dumps the contents of a Qt D-Bus argument from \a arg into a string.
     */
     QString argumentToString(const QVariant &arg)
     {

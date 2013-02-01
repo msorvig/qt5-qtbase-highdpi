@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,8 +46,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
@@ -197,7 +195,5 @@ private:
 QT_END_NAMESPACE
 
 #endif // QT_NO_SETTINGS
-
-QT_END_HEADER
 
 #endif // QSETTINGS_H

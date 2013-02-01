@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -60,8 +60,6 @@
 #include <QtDBus/qdbuserror.h>
 
 #ifndef QT_NO_DBUS
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -160,8 +158,6 @@ namespace QDBusUtil
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

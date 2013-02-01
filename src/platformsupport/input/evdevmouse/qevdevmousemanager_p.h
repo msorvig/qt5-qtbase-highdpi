@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -50,8 +50,6 @@
 #include <QHash>
 #include <QSocketNotifier>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEvdevMouseManager : public QObject
@@ -78,8 +76,6 @@ private:
     int m_xoffset;
     int m_yoffset;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

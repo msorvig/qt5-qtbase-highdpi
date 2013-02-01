@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -866,6 +866,27 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 }
 
 /*!
+    \since 4.8
+
+    This slot is called just after the internal data of a model is cleared
+    while it is being reset.
+
+    This slot is provided the convenience of subclasses of concrete proxy
+    models, such as subclasses of QSortFilterProxyModel which maintain extra
+    data.
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 12
+
+    \note Due to a mistake, this slot is missing in Qt 5.0.
+
+    \sa modelAboutToBeReset(), modelReset()
+*/
+void QAbstractItemModel::resetInternalData()
+{
+
+}
+
+/*!
     \class QModelIndex
     \inmodule QtCore
 
@@ -1063,7 +1084,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     The QAbstractItemModel class is one of the \l{Model/View Classes}
     and is part of Qt's \l{Model/View Programming}{model/view framework}. It
     can be used as the underlying data model for the item view elements in
-    QML or the item view classes in the QtWidgets module.
+    QML or the item view classes in the Qt Widgets module.
 
     If you need a model to use with an item view such as QML's List View
     element or the C++ widgets QListView or QTableView, you should consider
@@ -3055,6 +3076,7 @@ void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
     d->invalidatePersistentIndexes();
+    QMetaObject::invokeMethod(this, "resetInternalData");
     emit modelReset(QPrivateSignal());
 }
 
@@ -3272,6 +3294,17 @@ bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
 }
 
 /*!
+    \reimp
+ */
+Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    if (index.isValid())
+        f |= Qt::ItemNeverHasChildren;
+    return f;
+}
+
+/*!
     \class QAbstractListModel
     \inmodule QtCore
     \brief The QAbstractListModel class provides an abstract model that can be
@@ -3389,6 +3422,17 @@ QModelIndex QAbstractListModel::index(int row, int column, const QModelIndex &pa
 QModelIndex QAbstractListModel::parent(const QModelIndex & /* index */) const
 {
     return QModelIndex();
+}
+
+/*!
+    \reimp
+ */
+Qt::ItemFlags QAbstractListModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    if (index.isValid())
+        f |= Qt::ItemNeverHasChildren;
+    return f;
 }
 
 /*!

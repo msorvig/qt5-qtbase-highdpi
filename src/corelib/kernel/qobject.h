@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -56,8 +56,6 @@
 
 #include <QtCore/qobject_impl.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -73,7 +71,7 @@ class QWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 class QRegularExpression;
 #endif
 #ifndef QT_NO_USERDATA
@@ -163,12 +161,8 @@ public:
     inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 
@@ -177,27 +171,19 @@ public:
     inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     template<typename T>
     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 #endif
@@ -507,8 +493,6 @@ namespace QtPrivate {
 #define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1String(#obj))
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif
 

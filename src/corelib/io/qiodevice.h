@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,8 +53,6 @@
 #ifdef open
 #error qiodevice.h must be included before any header file that defines open
 #endif
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -176,7 +174,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, QIODevice::OpenMode modes);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QIODEVICE_H

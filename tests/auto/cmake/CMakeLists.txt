@@ -51,9 +51,11 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.9)
     # Requires INCLUDE_DIRECTORIES target property in CMake 2.8.8
     # and POSITION_INDEPENDENT_CODE target property in 2.8.9
     expect_pass(test_use_modules_function)
+    expect_pass(test_umbrella_config)
 else()
-    message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
+    message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\" or \"test_umbrella_config\"")
 endif()
+
 expect_pass(test_wrap_cpp_and_resources)
 expect_pass(test_dependent_modules)
 expect_fail(test_add_resource_options)
@@ -62,7 +64,7 @@ expect_pass("test(needsquoting)dirname")
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
-# If QtDBus has been installed then run the tests for its macros.
+# If Qt D-Bus has been installed then run the tests for its macros.
 find_package(Qt5DBus QUIET)
 if (Qt5DBus_FOUND AND NOT APPLE)
     expect_pass(test_dbus_module)

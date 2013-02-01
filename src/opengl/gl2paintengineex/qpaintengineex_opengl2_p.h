@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -155,7 +155,8 @@ public:
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool supportsTransformations(QFontEngine *, const QTransform &) const { return true; }
+    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const { return false; }
+    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
@@ -226,6 +227,7 @@ public:
     void setBrush(const QBrush& brush);
     void transferMode(EngineMode newMode);
     bool prepareForDraw(bool srcPixelsAreOpaque); // returns true if the program has changed
+    bool prepareForCachedGlyphDraw(const QFontEngineGlyphCache &cache);
     inline void useSimpleShader();
     inline GLuint location(const QGLEngineShaderManager::Uniform uniform) {
         return shaderManager->getUniformLocation(uniform);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -81,6 +81,11 @@ int QEglFSScreen::depth() const
 QImage::Format QEglFSScreen::format() const
 {
     return hooks->screenFormat();
+}
+
+QSizeF QEglFSScreen::physicalSize() const
+{
+    return hooks->physicalScreenSize();
 }
 
 QPlatformCursor *QEglFSScreen::cursor() const

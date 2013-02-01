@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -54,7 +52,5 @@ QT_BEGIN_NAMESPACE
 #define QTEST_ASSERT_X(cond, where, what) do { if (!(cond)) qt_assert_x(where, what,__FILE__,__LINE__); } while (0)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

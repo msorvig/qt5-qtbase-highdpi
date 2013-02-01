@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <QtGui/qaccessible.h>
 #include <QtCore/qcoreapplication.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -186,9 +184,9 @@ public:
     virtual bool isColumnSelected(int column) const = 0;
     // Returns a boolean value indicating whether the specified row is completely selected.
     virtual bool isRowSelected(int row) const = 0;
-    // Selects a row and unselects all previously selected rows.
+    // Selects a row and it might unselect all previously selected rows.
     virtual bool selectRow(int row) = 0;
-    // Selects a column and unselects all previously selected columns.
+    // Selects a column it might unselect all previously selected columns.
     virtual bool selectColumn(int column) = 0;
     // Unselects one row, leaving other selected rows selected (if any).
     virtual bool unselectRow(int row) = 0;
@@ -233,7 +231,5 @@ public:
 #endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

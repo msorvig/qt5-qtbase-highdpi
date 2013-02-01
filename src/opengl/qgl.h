@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -51,8 +51,6 @@
 #include <QtCore/qscopedpointer.h>
 
 #include <QtGui/QSurfaceFormat>
-
-QT_BEGIN_HEADER
 
 #if defined(Q_OS_WIN)
 # include <QtCore/qt_windows.h>
@@ -552,8 +550,6 @@ inline bool QGLFormat::sampleBuffers() const
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 #endif // QGL_H

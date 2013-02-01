@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1853,7 +1853,8 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         QStyleOptionViewItem option = d->viewOptions();
         if (d->pressedAlreadySelected)
             option.state |= QStyle::State_Selected;
-        if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, &option, this))
+        if ((model()->flags(index) & Qt::ItemIsEnabled)
+            && style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, &option, this))
             emit activated(index);
     }
 }
@@ -3816,13 +3817,31 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                                                                         const QEvent *event) const
 {
     Q_D(const QAbstractItemView);
+    Qt::KeyboardModifiers keyModifiers = Qt::NoModifier;
+    if (event) {
+        switch (event->type()) {
+            case QEvent::MouseButtonDblClick:
+            case QEvent::MouseButtonPress:
+            case QEvent::MouseButtonRelease:
+            case QEvent::MouseMove:
+            case QEvent::KeyPress:
+            case QEvent::KeyRelease:
+                keyModifiers = (static_cast<const QInputEvent*>(event))->modifiers();
+                break;
+            default:
+                keyModifiers = QApplication::keyboardModifiers();
+        }
+    }
     switch (d->selectionMode) {
         case NoSelection: // Never update selection model
             return QItemSelectionModel::NoUpdate;
         case SingleSelection: // ClearAndSelect on valid index otherwise NoUpdate
             if (event && event->type() == QEvent::MouseButtonRelease)
                 return QItemSelectionModel::NoUpdate;
-            return QItemSelectionModel::ClearAndSelect|d->selectionBehaviorFlags();
+            if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index))
+                return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();
+            else
+                return QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
         case MultiSelection:
             return d->multiSelectionCommand(index, event);
         case ExtendedSelection:

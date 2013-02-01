@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -48,8 +48,6 @@
 #include <QtNetwork/qabstractsocket.h>
 
 struct sockaddr;
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -142,5 +140,4 @@ Q_NETWORK_EXPORT QDataStream &operator>>(QDataStream &, QHostAddress &);
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
 #endif // QHOSTADDRESS_H

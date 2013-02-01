@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <qglobal.h>
 #include <qatomic.h>
-
-QT_BEGIN_HEADER
 
 /*
  * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
@@ -250,7 +248,5 @@ inline uint qCpuHasFeature(CPUFeatures feature)
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSIMD_P_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -959,11 +959,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         break;
 #endif
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     case QMetaType::QRegularExpression:
         stream << *static_cast<const NS(QRegularExpression)*>(data);
         break;
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
     case QMetaType::QEasingCurve:
         stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
@@ -1182,11 +1182,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         break;
 #endif
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     case QMetaType::QRegularExpression:
         stream >> *static_cast< NS(QRegularExpression)*>(data);
         break;
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
     case QMetaType::QEasingCurve:
         stream >> *static_cast< NS(QEasingCurve)*>(data);
         break;

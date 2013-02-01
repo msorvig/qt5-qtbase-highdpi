@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -85,9 +85,9 @@ static const char *languageForWritingSystem[] = {
     "ko",  // Korean
     "vi",  // Vietnamese
     0, // Symbol
-    0, // Ogham
-    0, // Runic
-    0 // N'Ko
+    "sga", // Ogham
+    "non", // Runic
+    "man" // N'Ko
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
@@ -326,7 +326,7 @@ void QCoreTextFontDatabase::releaseHandle(void *handle)
     CFRelease(CTFontDescriptorRef(handle));
 }
 
-QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QUnicodeTables::Script script, void *usrPtr)
+QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QChar::Script script, void *usrPtr)
 {
     Q_UNUSED(script);
 
@@ -376,7 +376,7 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal
     return fontEngine;
 }
 
-QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);

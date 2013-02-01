@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -949,8 +949,8 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
     \section1 A Note on GUI Types
 
-    Because QVariant is part of the QtCore library, it cannot provide
-    conversion functions to data types defined in QtGui, such as
+    Because QVariant is part of the Qt Core module, it cannot provide
+    conversion functions to data types defined in Qt GUI, such as
     QColor, QImage, and QPixmap. In other words, there is no \c
     toColor() function. Instead, you can use the QVariant::value() or
     the qvariant_cast() template function. For example:
@@ -1529,10 +1529,13 @@ QVariant::QVariant(const QLocale &l)
 QVariant::QVariant(const QRegExp &regExp)
     : d(RegExp)
 { v_construct<QRegExp>(&d, regExp); }
+#endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGULAREXPRESSION
 QVariant::QVariant(const QRegularExpression &re)
     : d(RegularExpression)
 { v_construct<QRegularExpression>(&d, re); }
+#endif
 QVariant::QVariant(const QUuid &uuid)
     : d(Uuid)
 { v_construct<QUuid>(&d, uuid); }
@@ -1552,7 +1555,6 @@ QVariant::QVariant(const QJsonDocument &jsonDocument)
     : d(QMetaType::QJsonDocument)
 { v_construct<QJsonDocument>(&d, jsonDocument); }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
 
 /*!
     Returns the storage type of the value stored in the variant.
@@ -2214,6 +2216,7 @@ QRegExp QVariant::toRegExp() const
 }
 #endif
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \fn QRegularExpression QVariant::toRegularExpression() const
     \since 5.0
@@ -2223,13 +2226,12 @@ QRegExp QVariant::toRegExp() const
 
     \sa canConvert(), convert()
 */
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 QRegularExpression QVariant::toRegularExpression() const
 {
     return qVariantToHelper<QRegularExpression>(d, handlerManager);
 }
-#endif
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     \since 5.0

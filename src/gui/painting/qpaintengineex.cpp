@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1081,14 +1081,9 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 }
 
-bool QPaintEngineEx::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
+bool QPaintEngineEx::requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &t) const
 {
-    Q_UNUSED(fontEngine);
-
-    if (!m.isAffine())
-        return true;
-
-    return false;
+    return t.type() >= QTransform::TxProject;
 }
 
 bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const

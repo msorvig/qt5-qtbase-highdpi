@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -383,6 +383,8 @@ int QAccessibleWidget::childCount() const
 /*! \reimp */
 int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
+    if (!child)
+        return -1;
     QWidgetList cl = childWidgets(widget());
     return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }

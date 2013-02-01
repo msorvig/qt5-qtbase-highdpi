@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -2681,6 +2681,10 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
 */
 
 /*! \fn bool QTest::qCompare(QStringList const &t1, QStringList const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 

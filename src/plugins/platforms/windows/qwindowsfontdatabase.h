@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -78,9 +78,9 @@ public:
     ~QWindowsFontDatabase();
 
     virtual void populateFontDatabase();
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
-    virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
+    virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
     virtual QString fontDir() const;
@@ -106,7 +106,6 @@ public:
 private:
     void populate(const QString &family = QString());
     void removeApplicationFonts();
-    QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
     QSet<QString> m_families;
 
     struct WinApplicationFont {

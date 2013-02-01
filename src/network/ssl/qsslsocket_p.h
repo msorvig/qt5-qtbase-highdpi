@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -181,6 +181,8 @@ public:
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
     virtual void continueHandshake() = 0;
+
+    Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
 
 private:
     static bool ensureLibraryLoaded();

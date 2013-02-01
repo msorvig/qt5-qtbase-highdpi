@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -45,8 +45,6 @@
 
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qsslcertificate.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -125,7 +123,5 @@ QT_END_NAMESPACE
 #ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QList<QSslError>)
 #endif
-
-QT_END_HEADER
 
 #endif

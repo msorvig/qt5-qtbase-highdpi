@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -783,7 +783,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::CalculateSize:
-            return false;
+            return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
         default:
             break;
         }
@@ -818,12 +818,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
         return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
     case QtWindows::CalculateSize:
-        // NCCALCSIZE_PARAMS structure if wParam==TRUE
-        if (wParam && QWindowsContext::verboseWindows) {
-            const NCCALCSIZE_PARAMS *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(lParam);
-            qDebug() << platformWindow->window() << *ncp;
-        }
-        break;
+        return QWindowsGeometryHint::handleCalculateSize(platformWindow->customMargins(), msg, result);
 #endif
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);

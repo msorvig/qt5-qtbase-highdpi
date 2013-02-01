@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -92,7 +92,8 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
 
 void HelloWindow::render()
 {
-    emit needRender(this, m_color, size());
+    if (isExposed())
+        emit needRender(this, m_color, size());
 }
 
 void HelloWindow::updateColor()

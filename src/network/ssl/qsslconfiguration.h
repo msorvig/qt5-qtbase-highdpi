@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -60,8 +60,6 @@
 #include <QtCore/qshareddata.h>
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssl.h>
-
-QT_BEGIN_HEADER
 
 #ifndef QT_NO_SSL
 
@@ -140,7 +138,5 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSslConfiguration)
 
 #endif  // QT_NO_SSL
-
-QT_END_HEADER
 
 #endif

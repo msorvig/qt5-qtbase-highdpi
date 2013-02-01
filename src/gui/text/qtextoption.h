@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -46,8 +46,6 @@
 #include <QtCore/qchar.h>
 #include <QtCore/qmetatype.h>
 
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -156,7 +154,5 @@ inline void QTextOption::setTabStop(qreal atabStop)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE( QTextOption::Tab )
-
-QT_END_HEADER
 
 #endif // QTEXTOPTION_H

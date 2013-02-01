@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -68,7 +68,7 @@
 #  endif
 #endif
 
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_VXWORKS) && defined(_WRS_KERNEL)
 #  include <envLib.h>
 #endif
 
@@ -2792,8 +2792,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     As a rule of thumb, \c QT_BEGIN_NAMESPACE should appear in all Qt header
     and Qt source files after the last \c{#include} line and before the first
-    declaration. In Qt headers using \c QT_BEGIN_HEADER, \c QT_BEGIN_NAMESPACE
-    follows \c QT_BEGIN_HEADER immediately.
+    declaration.
 
     If that rule can't be followed because, e.g., \c{#include} lines and
     declarations are wildly mixed, place \c QT_BEGIN_NAMESPACE before

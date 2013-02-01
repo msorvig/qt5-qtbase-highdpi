@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -59,8 +59,6 @@
 #include <QtGui/qcursor.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -112,6 +110,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 
 public:
 
@@ -148,6 +147,8 @@ public:
     QString title() const;
 
     void setOpacity(qreal level);
+    qreal opacity() const;
+
     void requestActivate();
 
     bool isActive() const;
@@ -288,6 +289,8 @@ Q_SIGNALS:
 
     void focusObjectChanged(QObject *object);
 
+    void opacityChanged(qreal opacity);
+
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);
 
@@ -330,7 +333,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOW_H

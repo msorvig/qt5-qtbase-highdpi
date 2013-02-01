@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -903,7 +903,12 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
     d->configuration.sslOptions = configuration.d->sslOptions;
-    d->allowRootCertOnDemandLoading = false;
+
+    // if the CA certificates were set explicitly (either via
+    // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),
+    // we cannot load the certificates on demand
+    if (!configuration.d->allowRootCertOnDemandLoading)
+        d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -2381,6 +2386,14 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
 /*!
     \internal
 */
+bool QSslSocketPrivate::rootCertOnDemandLoadingSupported()
+{
+    return s_loadRootCertsOnDemand;
+}
+
+/*!
+    \internal
+*/
 QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 {
     return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
@@ -2389,7 +2402,7 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
                                << "/usr/local/ssl/" // Normal OpenSSL Tarball
                                << "/var/ssl/certs/" // AIX
                                << "/usr/local/ssl/certs/" // Solaris
-                               << "/var/certmgr/web/user_trusted/" // BlackBerry
+                               << "/etc/openssl/certs/" // BlackBerry
                                << "/opt/openssl/certs/"; // HP-UX
 }
 

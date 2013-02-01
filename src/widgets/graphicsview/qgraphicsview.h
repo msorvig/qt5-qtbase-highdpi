@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -46,8 +46,6 @@
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qscrollarea.h>
 #include <QtWidgets/qgraphicsscene.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -309,7 +307,5 @@ inline QPolygon QGraphicsView::mapFromScene(qreal ax, qreal ay, qreal w, qreal h
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGRAPHICSVIEW_H

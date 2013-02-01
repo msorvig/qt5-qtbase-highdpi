@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -47,7 +47,7 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QtOpenGL module.  This header file may change from
+// of the Qt OpenGL module.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.

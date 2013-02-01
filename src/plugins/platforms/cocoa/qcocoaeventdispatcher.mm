@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -149,10 +149,10 @@ void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
         CFTimeInterval oneyear = CFTimeInterval(3600. * 24. * 365.);
 
         // Q: when should the CFRunLoopTimer fire for the first time?
-        struct timeval tv;
+        struct timespec tv;
         if (timerInfoList.timerWait(tv)) {
             // A: when we have timers to fire, of course
-            interval = qMax(tv.tv_sec + tv.tv_usec / 1000000., 0.0000001);
+            interval = qMax(tv.tv_sec + tv.tv_nsec / 1000000000., 0.0000001);
         } else {
             // this shouldn't really happen, but in case it does, set the timer to fire a some point in the distant future
             interval = oneyear;
@@ -172,10 +172,10 @@ void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
         CFTimeInterval interval;
 
         // Q: when should the timer first next?
-        struct timeval tv;
+        struct timespec tv;
         if (timerInfoList.timerWait(tv)) {
             // A: when we have timers to fire, of course
-            interval = qMax(tv.tv_sec + tv.tv_usec / 1000000., 0.0000001);
+            interval = qMax(tv.tv_sec + tv.tv_nsec / 1000000000., 0.0000001);
         } else {
             // no timers can fire, but we cannot stop the CFRunLoopTimer, set the timer to fire at some
             // point in the distant future (the timer interval is one year)
@@ -881,7 +881,7 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
 void QCocoaEventDispatcherPrivate::beginModalSession(QWindow *window)
 {
     // We need to start spinning the modal session. Usually this is done with
-    // QDialog::exec() for QtWidgets based applications, but for others that
+    // QDialog::exec() for Qt Widgets based applications, but for others that
     // just call show(), we need to interrupt(). We call this here, before
     // setting currentModalSessionCached to zero, so that interrupt() calls
     // [NSApp abortModal] if another modal session is currently running

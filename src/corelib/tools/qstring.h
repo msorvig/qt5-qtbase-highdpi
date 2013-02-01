@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -64,14 +64,13 @@ namespace std
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 class QCharRef;
 class QRegExp;
 class QRegularExpression;
+class QRegularExpressionMatch;
 class QString;
 class QStringList;
 class QTextCodec;
@@ -335,10 +334,11 @@ public:
     inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     int indexOf(const QRegularExpression &re, int from = 0) const;
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     bool contains(const QRegularExpression &re) const;
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const; // ### Qt 6: merge overloads
     int count(const QRegularExpression &re) const;
 #endif
 
@@ -356,7 +356,7 @@ public:
 #ifndef QT_NO_REGEXP
     QString section(const QRegExp &reg, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QString section(const QRegularExpression &re, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
     QString left(int n) const Q_REQUIRED_RESULT;
@@ -432,7 +432,7 @@ public:
     inline QString &remove(const QRegExp &rx)
     { return replace(rx, QString()); }
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QString &replace(const QRegularExpression &re, const QString  &after);
     inline QString &remove(const QRegularExpression &re)
     { return replace(re, QString()); }
@@ -447,7 +447,7 @@ public:
 #ifndef QT_NO_REGEXP
     QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
 #endif
     enum NormalizationForm {
@@ -884,6 +884,8 @@ public:
     QChar::Decomposition decompositionTag() const { return QChar(*this).decompositionTag(); }
     uchar combiningClass() const { return QChar(*this).combiningClass(); }
 
+    inline QChar::Script script() const { return QChar(*this).script(); }
+
     QChar::UnicodeVersion unicodeVersion() const { return QChar(*this).unicodeVersion(); }
 
     inline uchar cell() const { return QChar(*this).cell(); }
@@ -1271,6 +1273,8 @@ public:
     int localeAwareCompare(const QStringRef &s) const;
     static int localeAwareCompare(const QStringRef &s1, const QString &s2);
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
+
+    QStringRef trimmed() const Q_REQUIRED_RESULT;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 
@@ -1385,8 +1389,6 @@ QT_DEPRECATED inline QString escape(const QString &plain) {
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>

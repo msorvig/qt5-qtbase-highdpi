@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -42,6 +42,10 @@
 #include <QtTest>
 #include <QObject>
 #include <QProcessEnvironment>
+
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
 
 class tst_QProcessEnvironment: public QObject
 {
@@ -318,3 +322,4 @@ void tst_QProcessEnvironment::putenv()
 QTEST_MAIN(tst_QProcessEnvironment)
 
 #include "tst_qprocessenvironment.moc"
+#endif

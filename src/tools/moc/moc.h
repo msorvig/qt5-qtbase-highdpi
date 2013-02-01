@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -127,7 +127,7 @@ struct FunctionDef
 struct PropertyDef
 {
     PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec), revision(0){}
-    QByteArray name, type, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
+    QByteArray name, type, member, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
     int notifyId;
     bool constant;
     bool final;

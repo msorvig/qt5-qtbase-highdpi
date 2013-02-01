@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,7 +28,7 @@
 /*!
     \example tools/completer
     \title Completer Example
-    \ingroup example-widgets-tools
+    \ingroup examples-widgets-tools
 
     \brief The Completer example shows how to provide string-completion facilities
     for an input widget based on data provided by a model.

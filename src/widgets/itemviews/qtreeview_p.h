@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -203,7 +203,7 @@ public:
 
     inline bool isIndexExpanded(const QModelIndex &idx) const {
         //We first check if the idx is a QPersistentModelIndex, because creating QPersistentModelIndex is slow
-        return isPersistent(idx) && expandedIndexes.contains(idx);
+        return !(idx.flags() & Qt::ItemNeverHasChildren) && isPersistent(idx) && expandedIndexes.contains(idx);
     }
 
     // used when hiding and showing items

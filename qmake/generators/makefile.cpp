@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -3283,6 +3283,27 @@ MakefileGenerator::writePkgConfigFile()
     }
 
     t << endl;
+}
+
+QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst)
+{
+    QString ret;
+    if (project->isEmpty(replace_rule)
+        || project->isActiveConfig("no_sed_meta_install")
+        || project->isEmpty("QMAKE_STREAM_EDITOR")) {
+        ret += "-$(INSTALL_FILE) \"" + src + "\" \"" + dst + "\"";
+    } else {
+        ret += "-$(SED)";
+        const ProStringList &replace_rules = project->values(replace_rule);
+        for (int r = 0; r < replace_rules.size(); ++r) {
+            const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
+                        replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
+            if (!match.isEmpty() /*&& match != replace*/)
+                ret += " -e \"s," + match + "," + replace + ",g\"";
+        }
+        ret += " \"" + src + "\" >\"" + dst + "\"";
+    }
+    return ret;
 }
 
 QT_END_NAMESPACE

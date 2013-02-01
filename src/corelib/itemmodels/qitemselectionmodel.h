@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -46,8 +46,6 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qabstractitemmodel.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -252,7 +250,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
 #endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QITEMSELECTIONMODEL_H

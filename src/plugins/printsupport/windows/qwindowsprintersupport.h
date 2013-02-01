@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -44,7 +44,6 @@
 
 #include <qpa/qplatformprintersupport.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QWin32PrintEngine;
@@ -61,6 +60,5 @@ public:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // WINDOWSPRINTERSUPPORT_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -46,7 +46,6 @@
 #include <QtCore/QObject>
 #include "struct_marshallers_p.h"
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QSpiDBusCache : public QObject
@@ -67,6 +66,5 @@ public Q_SLOTS:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif /* Q_SPI_CACHE_H */

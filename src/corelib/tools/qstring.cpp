@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -2762,13 +2762,17 @@ int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs
                              str.size(), cs);
 }
 
-#ifndef QT_NO_REGEXP
+
+#if !(defined(QT_NO_REGEXP) && defined(QT_NO_REGULAREXPRESSION))
 struct QStringCapture
 {
     int pos;
     int len;
     int no;
 };
+#endif
+
+#ifndef QT_NO_REGEXP
 
 /*!
   \overload replace()
@@ -2925,7 +2929,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
   \overload replace()
@@ -3055,7 +3059,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     return *this;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     Returns the number of (potentially overlapping) occurrences of
@@ -3256,7 +3260,7 @@ int QString::count(const QRegExp& rx) const
 }
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload indexOf()
@@ -3336,6 +3340,33 @@ bool QString::contains(const QRegularExpression &re) const
 }
 
 /*!
+    \overload contains()
+    \since 5.1
+
+    Returns true if the regular expression \a re matches somewhere in this
+    string; otherwise returns false.
+
+    If the match is successful and \a match is not a null pointer, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed by \a match.
+
+    \sa QRegularExpression::match()
+*/
+
+bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *match) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::contains: invalid QRegularExpresssion object");
+        return false;
+    }
+    QRegularExpressionMatch m = re.match(*this);
+    bool hasMatch = m.hasMatch();
+    if (hasMatch && match)
+        *match = m;
+    return hasMatch;
+}
+
+/*!
     \overload count()
     \since 5.0
 
@@ -3366,7 +3397,7 @@ int QString::count(const QRegularExpression &re) const
     return count;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*! \fn int QString::count() const
 
@@ -3487,7 +3518,7 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
     return ret;
 }
 
-#ifndef QT_NO_REGEXP
+#if !(defined(QT_NO_REGEXP) && defined(QT_NO_REGULAREXPRESSION))
 class qt_section_chunk {
 public:
     qt_section_chunk(int l, QString s) { length = l; string = s; }
@@ -3537,7 +3568,9 @@ static QString extractSections(const QList<qt_section_chunk> &sections,
 
     return ret;
 }
+#endif
 
+#ifndef QT_NO_REGEXP
 /*!
     \overload section()
 
@@ -3575,7 +3608,7 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload section()
@@ -3621,7 +3654,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     return extractSections(sections, start, end, flags);
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     Returns a substring that contains the \a n leftmost characters
@@ -6416,7 +6449,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload
@@ -6470,7 +6503,7 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
     return list;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     \enum QString::NormalizationForm
@@ -9160,6 +9193,37 @@ QVector<uint> QStringRef::toUcs4() const
     return v;
 }
 
+/*!
+    Returns a string that has whitespace removed from the start and
+    the end.
+
+    Whitespace means any character for which QChar::isSpace() returns
+    true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    '\\f', '\\r', and ' '.
+
+    Unlike QString::simplified(), trimmed() leaves internal whitespace alone.
+
+    \since 5.1
+
+    \sa QString::trimmed()
+*/
+QStringRef QStringRef::trimmed() const
+{
+    if (m_size == 0 || m_string == 0)
+        return *this;
+    const QChar *s = m_string->constData() + m_position;
+    int start = 0;
+    int end = m_size - 1;
+    while (start <= end && s[start].isSpace())  // skip white space from start
+        start++;
+    if (start <= end) {                         // only white space
+        while (end && s[end].isSpace())         // skip white space from end
+            end--;
+    }
+    int l = end - start + 1;
+    Q_ASSERT(l >= 0);
+    return QStringRef(m_string, m_position + start, l);
+}
 
 /*!
     \obsolete

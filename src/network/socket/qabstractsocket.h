@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -47,8 +47,6 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
 #endif
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -241,7 +239,5 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
-
-QT_END_HEADER
 
 #endif // QABSTRACTSOCKET_H

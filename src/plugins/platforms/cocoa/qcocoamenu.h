@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -51,8 +51,6 @@
 @class NSMenu;
 @class NSObject;
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaMenu : public QPlatformMenu
@@ -71,11 +69,15 @@ public:
     void syncMenuItem(QPlatformMenuItem *menuItem);
     void setEnabled(bool enabled);
     void setVisible(bool visible);
+    void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item);
+
     void syncSeparatorsCollapsible(bool enable);
 
     void syncModalState(bool modal);
 
-    virtual void setText(const QString &text);
+    void setText(const QString &text);
+    void setMinimumWidth(int width);
+    void setFont(const QFont &font);
 
     void setParentItem(QCocoaMenuItem* item);
 
@@ -101,7 +103,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

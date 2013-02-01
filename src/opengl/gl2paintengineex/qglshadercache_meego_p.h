@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -67,8 +67,6 @@
 #if defined(QT_DEBUG) || defined(QT_MEEGO_EXPERIMENTAL_SHADERCACHE_TRACE)
 #  include <syslog.h>
 #endif
-
-QT_BEGIN_HEADER
 
 /*
     This cache stores internal Qt shader programs in shared memory.
@@ -449,8 +447,6 @@ private:
 QT_END_NAMESPACE
 
 #endif
-
-QT_END_HEADER
 
 #endif
 #endif

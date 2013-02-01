@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -149,8 +149,6 @@ void QCoreTextFontEngine::init()
     Q_ASSERT(ctfont != NULL);
     Q_ASSERT(cgFont != NULL);
 
-    glyphFormat = defaultGlyphFormat;
-
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
 
@@ -159,6 +157,14 @@ void QCoreTextFontEngine::init()
 
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+    if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
+        glyphFormat = QFontEngineGlyphCache::Raster_ARGB;
+    else
+#endif
+        glyphFormat = defaultGlyphFormat;
+
     if (traits & kCTFontItalicTrait)
         fontDef.style = QFont::StyleItalic;
 
@@ -422,6 +428,9 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
+    if (glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+        return; // We can't convert color-glyphs to path
+
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
     cgMatrix = CGAffineTransformScale(cgMatrix, 1, -1);
 
@@ -508,7 +517,15 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
 QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, false, QTransform());
+    return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
+}
+
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
+{
+    if (x.type() > QTransform::TxScale)
+        return QFontEngine::alphaMapForGlyph(glyph, subPixelPosition, x);
+
+    QImage im = imageForGlyph(glyph, subPixelPosition, false, x);
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
@@ -600,9 +617,15 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
     return new QCoreTextFontEngine(cgFont, newFontDef);
 }
 
-bool QCoreTextFontEngine::supportsTransformations(const QTransform &transform) const
+bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() > QTransform::TxTranslate;
+    if (transform.type() < QTransform::TxScale)
+        return true;
+    else if (transform.type() == QTransform::TxScale &&
+             transform.m11() >= 0 && transform.m22() >= 0)
+        return true;
+    else
+        return false;
 }
 
 QT_END_NAMESPACE

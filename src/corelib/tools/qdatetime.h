@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -47,8 +47,6 @@
 #include <QtCore/qsharedpointer.h>
 
 #include <limits>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -295,7 +293,5 @@ Q_CORE_EXPORT uint qHash(const QDate &key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT uint qHash(const QTime &key, uint seed = 0) Q_DECL_NOTHROW;
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDATETIME_H

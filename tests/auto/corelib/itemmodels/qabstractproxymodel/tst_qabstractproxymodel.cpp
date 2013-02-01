@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -281,8 +281,6 @@ void tst_QAbstractProxyModel::revert()
 // public void setSourceModel(QAbstractItemModel* sourceModel)
 void tst_QAbstractProxyModel::setSourceModel()
 {
-    qRegisterMetaType<QAbstractItemModel*>();
-
     SubQAbstractProxyModel model;
 
     QCOMPARE(model.property("sourceModel"), QVariant::fromValue<QAbstractItemModel*>(0));

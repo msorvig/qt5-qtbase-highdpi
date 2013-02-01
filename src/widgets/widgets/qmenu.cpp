@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -2722,7 +2722,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
                 key_consumed = true;
                 if(d->scroll)
                     d->scrollMenu(nextAction, QMenuPrivate::QMenuScroller::ScrollCenter, false);
-                d->setCurrentAction(nextAction, 20, QMenuPrivate::SelectedFromElsewhere, true);
+                d->setCurrentAction(nextAction, 0, QMenuPrivate::SelectedFromElsewhere, true);
                 if (!nextAction->menu() && activateAction) {
                     d->setSyncAction();
                     d->activateAction(nextAction, QAction::Trigger);

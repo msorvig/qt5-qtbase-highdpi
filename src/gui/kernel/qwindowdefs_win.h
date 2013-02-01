@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -43,8 +43,6 @@
 #define QWINDOWDEFS_WIN_H
 
 #include <QtCore/qglobal.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -123,7 +121,5 @@ Q_CORE_EXPORT int       qWinAppCmdShow();
 Q_WIDGETS_EXPORT HDC           qt_win_display_dc();
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOWDEFS_WIN_H

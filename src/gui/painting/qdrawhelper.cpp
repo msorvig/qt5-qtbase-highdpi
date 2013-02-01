@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -5368,7 +5368,7 @@ void qBlendTexture(int count, const QSpan *spans, void *userData)
     proc(count, spans, userData);
 }
 
-template <class DST>
+template <class DST> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
                                    int x, int y, DST color,
                                    const uchar *map,

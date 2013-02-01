@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*! \namespace QSsl
 
-    \brief The QSsl namespace declares enums common to all SSL classes in QtNetwork.
+    \brief The QSsl namespace declares enums common to all SSL classes in Qt Network.
     \since 4.3
 
     \ingroup network

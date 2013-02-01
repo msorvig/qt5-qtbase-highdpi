@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -59,8 +59,6 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -186,9 +184,9 @@ inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *act
     return qCompare(QString(t1), t2, actual, expected, file, line);
 }
 
-template<>
-inline bool qCompare(QStringList const &t1, QStringList const &t2,
-                    const char *actual, const char *expected, const char *file, int line)
+template <typename T>
+inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected,
+                    const char *file, int line)
 {
     char msg[1024];
     msg[0] = '\0';
@@ -196,21 +194,28 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
     const int actualSize = t1.count();
     const int expectedSize = t2.count();
     if (actualSize != expectedSize) {
-        qsnprintf(msg, sizeof(msg), "Compared QStringLists have different sizes.\n"
+        qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
                   "   Actual   (%s) size: '%d'\n"
                   "   Expected (%s) size: '%d'", actual, actualSize, expected, expectedSize);
         isOk = false;
     }
     for (int i = 0; isOk && i < actualSize; ++i) {
-        if (t1.at(i) != t2.at(i)) {
-            qsnprintf(msg, sizeof(msg), "Compared QStringLists differ at index %d.\n"
+        if (!(t1.at(i) == t2.at(i))) {
+            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %d.\n"
                       "   Actual   (%s): '%s'\n"
-                      "   Expected (%s): '%s'", i, actual, t1.at(i).toLatin1().constData(),
-                      expected, t2.at(i).toLatin1().constData());
+                      "   Expected (%s): '%s'", i, actual, toString(t1.at(i)),
+                      expected, toString(t2.at(i)));
             isOk = false;
         }
     }
     return compare_helper(isOk, msg, 0, 0, actual, expected, file, line);
+}
+
+template <>
+inline bool qCompare(QStringList const &t1, QStringList const &t2, const char *actual, const char *expected,
+                            const char *file, int line)
+{
+    return qCompare<QString>(t1, t2, actual, expected, file, line);
 }
 
 template <typename T>
@@ -293,7 +298,5 @@ int main(int argc, char *argv[]) \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
-
-QT_END_HEADER
 
 #endif

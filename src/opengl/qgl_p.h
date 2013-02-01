@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -265,7 +265,6 @@ public:
                             QGLContext::BindOptions options);
     QGLTexture *textureCacheLookup(const qint64 key, GLenum target);
     void init(QPaintDevice *dev, const QGLFormat &format);
-    QImage convertToGLFormat(const QImage &image, bool force_premul, GLenum texture_format);
     int maxTextureSize();
 
     void cleanup();

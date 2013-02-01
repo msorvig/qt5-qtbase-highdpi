@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -220,6 +220,15 @@ QT_BEGIN_NAMESPACE
     returns a reference to this point.
 
     \sa operator/=()
+*/
+
+/*!
+    \fn static int QPoint::dotProduct(const QPoint &p1, const QPoint &p2)
+    \since 5.1
+
+    \snippet code/src_corelib_tools_qpoint.cpp 16
+
+    Returns the dot product of \a p1 and \a p2.
 */
 
 /*!
@@ -709,6 +718,15 @@ QDebug operator<<(QDebug d, const QPointF &p)
     returns a QPoint object with the rounded coordinates.
 
     \sa QPointF()
+*/
+
+/*!
+    \fn static qreal QPointF::dotProduct(const QPointF &p1, const QPointF &p2)
+    \since 5.1
+
+    \snippet code/src_corelib_tools_qpoint.cpp 17
+
+    Returns the dot product of \a p1 and \a p2.
 */
 
 /*!

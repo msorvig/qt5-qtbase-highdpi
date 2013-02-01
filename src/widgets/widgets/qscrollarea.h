@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -43,8 +43,6 @@
 #define QSCROLLAREA_H
 
 #include <QtWidgets/qabstractscrollarea.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -94,7 +92,5 @@ private:
 #endif // QT_NO_SCROLLAREA
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSCROLLAREA_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -115,7 +115,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
 void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
 {
     qDBusDebug() << QThread::currentThread()
-                 << "QtDBus threading action" << action
+                 << "Qt D-Bus threading action" << action
                  << (condition == QDBusLockerBase::BeforeLock ? "before lock" :
                      condition == QDBusLockerBase::AfterLock ? "after lock" :
                      condition == QDBusLockerBase::BeforeUnlock ? "before unlock" :
@@ -587,16 +587,75 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
     return false;
 }
 
+static void garbageCollectChildren(QDBusConnectionPrivate::ObjectTreeNode &node)
+{
+    int size = node.children.count();
+    if (node.activeChildren == 0) {
+        // easy case
+        node.children.clear();
+    } else if (size > node.activeChildren * 3 || (size > 20 && size * 2 > node.activeChildren * 3)) {
+        // rewrite the vector, keeping only the active children
+        // if the vector is large (> 20 items) and has one third of inactives
+        // or if the vector is small and has two thirds of inactives.
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node.children.end();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = node.children.begin();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator tgt = it;
+        for ( ; it != end; ++it) {
+            if (it->isActive())
+                *tgt++ = qMove(*it);
+        }
+        ++tgt;
+        node.children.erase(tgt, end);
+    }
+}
+
 static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNode &haystack)
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = haystack.children.end();
-    for ( ; it != end; ++it)
+    for ( ; it != end; ++it) {
+        if (!it->isActive())
+            continue;
         huntAndDestroy(needle, *it);
+        if (!it->isActive())
+            --haystack.activeChildren;
+    }
 
     if (needle == haystack.obj) {
         haystack.obj = 0;
         haystack.flags = 0;
+    }
+
+    garbageCollectChildren(haystack);
+}
+
+static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+                              QDBusConnectionPrivate::ObjectTreeNode *node)
+{
+    if (pathComponents.count() == i) {
+        // found it
+        node->obj = 0;
+        node->flags = 0;
+
+        if (mode == QDBusConnection::UnregisterTree) {
+            // clear the sub-tree as well
+            node->activeChildren = 0;
+            node->children.clear();  // can't disconnect the objects because we really don't know if they can
+                            // be found somewhere else in the path too
+        }
+    } else {
+        // keep going
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node->children.end();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
+            std::lower_bound(node->children.begin(), end, pathComponents.at(i));
+        if (it == end || it->name != pathComponents.at(i) || !it->isActive())
+            return;              // node not found
+
+        huntAndUnregister(pathComponents, i + 1, mode, it);
+        if (!it->isActive())
+            --node->activeChildren;
+
+        garbageCollectChildren(*node);
     }
 }
 
@@ -606,8 +665,10 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
-    for ( ; it != end; ++it)
-        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
+    for ( ; it != end; ++it) {
+        if (it->isActive())
+            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
+    }
 
     if (needle == haystack.obj) {
         // is this a signal we should relay?
@@ -2247,6 +2308,21 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
                 this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
                 Qt::DirectConnection);
     }
+}
+
+void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
+{
+    QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
+    QStringList pathComponents;
+    int i;
+    if (path == QLatin1String("/")) {
+        i = 0;
+    } else {
+        pathComponents = path.split(QLatin1Char('/'));
+        i = 1;
+    }
+
+    huntAndUnregister(pathComponents, i, mode, node);
 }
 
 void QDBusConnectionPrivate::connectRelay(const QString &service,

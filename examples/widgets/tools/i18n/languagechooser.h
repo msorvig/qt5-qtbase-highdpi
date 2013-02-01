@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -58,7 +58,7 @@ class LanguageChooser : public QDialog
     Q_OBJECT
 
 public:
-    LanguageChooser(QWidget *parent = 0);
+    explicit LanguageChooser(const QString& defaultLang = QString(), QWidget *parent = 0);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
@@ -73,6 +73,7 @@ private:
     QStringList findQmFiles();
     QString languageName(const QString &qmFile);
     QColor colorForLanguage(const QString &language);
+    static bool languageMatch(const QString& lang, const QString& qmFile);
 
     QGroupBox *groupBox;
     QDialogButtonBox *buttonBox;

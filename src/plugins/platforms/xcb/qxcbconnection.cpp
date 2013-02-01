@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -258,6 +258,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , has_randr_extension(false)
     , has_input_shape(false)
     , m_buttons(0)
+    , m_focusWindow(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -418,7 +419,7 @@ break;
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
         handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
         if (!handled) \
-            m_keyboard->handler(platformWindow, e); \
+            m_keyboard->handler(m_focusWindow, e); \
     } \
 } \
 break;
@@ -770,6 +771,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
         case XCB_CLIENT_MESSAGE:
             handleClientMessageEvent((xcb_client_message_event_t *)event);
+            break;
         case XCB_ENTER_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
@@ -940,6 +942,11 @@ QXcbEventArray *QXcbEventReader::lock()
 void QXcbEventReader::unlock()
 {
     m_mutex.unlock();
+}
+
+void QXcbConnection::setFocusWindow(QXcbWindow *w)
+{
+    m_focusWindow = w;
 }
 
 void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)

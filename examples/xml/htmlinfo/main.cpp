@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -94,7 +94,7 @@ void parseHtmlFile(QTextStream &out, const QString &fileName) {
 
 int main(int argc, char **argv)
 {
-    // initialize QtCore application
+    // initialize Qt Core application
     QCoreApplication app(argc, argv);
 
     // get a list of all html files in the current directory

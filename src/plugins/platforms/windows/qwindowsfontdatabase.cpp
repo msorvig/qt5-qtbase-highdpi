@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -52,6 +52,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
 #include <QtCore/QtEndian>
+#include <QtCore/QThreadStorage>
 
 #include <wchar.h>
 
@@ -1112,19 +1113,46 @@ void QWindowsFontDatabase::populate(const QString &family)
     ReleaseDC(0, dummy);
 }
 
-QWindowsFontDatabase::QWindowsFontDatabase() :
-    m_fontEngineData(new QWindowsFontEngineData)
+typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
+
+#ifndef QT_NO_THREAD
+typedef QThreadStorage<QWindowsFontEngineDataPtr> FontEngineThreadLocalData;
+
+Q_GLOBAL_STATIC(FontEngineThreadLocalData, fontEngineThreadLocalData)
+
+QSharedPointer<QWindowsFontEngineData> sharedFontData()
 {
-    // Properties accessed by QWin32PrintEngine (QtPrintSupport)
+    FontEngineThreadLocalData *data = fontEngineThreadLocalData();
+    if (!data->hasLocalData())
+        data->setLocalData(QSharedPointer<QWindowsFontEngineData>(new QWindowsFontEngineData));
+    return data->localData();
+}
+#else // !QT_NO_THREAD
+Q_GLOBAL_STATIC(QWindowsFontEngineDataPtr, fontEngineData)
+
+QWindowsFontEngineDataPtr sharedFontData()
+{
+    QWindowsFontEngineDataPtr *data = fontEngineData();
+    if (data->isNull())
+        *data = QWindowsFontEngineDataPtr(new QWindowsFontEngineData);
+    return *data;
+}
+#endif // QT_NO_THREAD
+
+QWindowsFontDatabase::QWindowsFontDatabase()
+{
+    // Properties accessed by QWin32PrintEngine (Qt Print Support)
     static const int hfontMetaTypeId = qRegisterMetaType<HFONT>();
     static const int logFontMetaTypeId = qRegisterMetaType<LOGFONT>();
     Q_UNUSED(hfontMetaTypeId)
     Q_UNUSED(logFontMetaTypeId)
 
-    if (QWindowsContext::verboseFonts)
+    if (QWindowsContext::verboseFonts) {
+        const QWindowsFontEngineDataPtr data = sharedFontData();
         qDebug() << __FUNCTION__ << "Clear type: "
-                 << m_fontEngineData->clearTypeEnabled << "gamma: "
-                 << m_fontEngineData->fontSmoothingGamma;
+                 << data->clearTypeEnabled << "gamma: "
+                 << data->fontSmoothingGamma;
+    }
 }
 
 QWindowsFontDatabase::~QWindowsFontDatabase()
@@ -1132,13 +1160,11 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
-QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef,
-                                              QUnicodeTables::Script script,
-                                              void *handle)
+QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
 {
     QFontEngine *fe = QWindowsFontDatabase::createEngine(script, fontDef,
                                               0, QWindowsContext::instance()->defaultDPI(), false,
-                                              QStringList(), m_fontEngineData);
+                                              QStringList(), sharedFontData());
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << "FONTDEF" << fontDef << script << fe << handle;
     return fe;
@@ -1187,9 +1213,9 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             request.styleStrategy = QFont::NoFontMerging | QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
 
-            fontEngine = QWindowsFontDatabase::createEngine(QUnicodeTables::Common, request, 0,
+            fontEngine = QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
                     QWindowsContext::instance()->defaultDPI(), false, QStringList(),
-                    m_fontEngineData);
+                    sharedFontData());
 
             if (fontEngine) {
                 if (request.family != fontEngine->fontDef.family) {
@@ -1501,8 +1527,8 @@ HFONT QWindowsFontDatabase::systemFont()
 
 static inline bool scriptRequiresOpenType(int script)
 {
-    return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
+    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
 }
 
 static const char *other_tryFonts[] = {
@@ -1687,7 +1713,7 @@ static QStringList extraTryFontsForFamily(const QString& family)
     return result;
 }
 
-QStringList QWindowsFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     if (!result.isEmpty())
@@ -1889,7 +1915,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         directWriteFont->Release();
 #endif
 
-    if (script == QUnicodeTables::Common
+    if (script == QChar::Script_Common
             && !(request.styleStrategy & QFont::NoFontMerging)) {
         QStringList extraFonts = extraTryFontsForFamily(request.family);
         if (extraFonts.size()) {

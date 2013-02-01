@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -140,14 +140,16 @@ public:
     {
         typedef QVector<ObjectTreeNode> DataList;
 
-        inline ObjectTreeNode() : obj(0), flags(0) { }
+        inline ObjectTreeNode() : obj(0), flags(0), activeChildren(0) { }
         inline ObjectTreeNode(const QString &n) // intentionally implicit
-            : name(n), obj(0), flags(0) { }
+            : name(n), obj(0), flags(0), activeChildren(0) { }
         inline ~ObjectTreeNode() { }
         inline bool operator<(const QString &other) const
             { return name < other; }
         inline bool operator<(const QStringRef &other) const
             { return QStringRef(&name) < other; }
+        inline bool isActive() const
+        { return obj || activeChildren; }
 
         QString name;
         union {
@@ -155,6 +157,7 @@ public:
             QDBusVirtualObject *treeNode;
         };
         int flags;
+        int activeChildren;
 
         DataList children;
     };
@@ -208,6 +211,7 @@ public:
                           const QString &name, const QStringList &argumentMatch, const QString &signature,
                           QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
+    void unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode);
     void connectRelay(const QString &service,
                       const QString &path, const QString &interface,
                       QDBusAbstractInterface *receiver, const QMetaMethod &signal);

@@ -1,7 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -725,6 +726,13 @@ QT_BEGIN_NAMESPACE
         that (in this text) there are other characters beyond the end of the
         subject string. This can lead to surprising results; see the discussion
         in the \l{partial matching} section for more details.
+
+    \value NoMatch
+        No matching is done. This value is returned as the match type by a
+        default constructed QRegularExpressionMatch or
+        QRegularExpressionMatchIterator. Using this match type is not very
+        useful for the user, as no matching ever happens. This enum value
+        has been introduced in Qt 5.1.
 */
 
 /*!
@@ -834,7 +842,7 @@ struct QRegularExpressionMatchPrivate : QSharedData
                                    const QString &subject,
                                    QRegularExpression::MatchType matchType,
                                    QRegularExpression::MatchOptions matchOptions,
-                                   int capturingCount);
+                                   int capturingCount = 0);
 
     QRegularExpressionMatch nextMatch() const;
 
@@ -975,7 +983,7 @@ void QRegularExpressionPrivate::getPatternInfo()
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
     // detect the settings for the newline
-    int patternNewlineSetting;
+    unsigned long int patternNewlineSetting;
     pcre16_fullinfo(compiledPattern, studyData, PCRE_INFO_OPTIONS, &patternNewlineSetting);
     patternNewlineSetting &= PCRE_NEWLINE_CR  | PCRE_NEWLINE_LF | PCRE_NEWLINE_CRLF
             | PCRE_NEWLINE_ANY | PCRE_NEWLINE_ANYCRLF;
@@ -1193,16 +1201,25 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     QRegularExpression re(*const_cast<QRegularExpressionPrivate *>(this));
 
     if (offset < 0 || offset > subject.length())
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
 
     if (!compiledPattern) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
     }
 
+    // skip optimizing and doing the actual matching if NoMatch type was requested
+    if (matchType == QRegularExpression::NoMatch) {
+        QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+                                                                                  matchType, matchOptions);
+        priv->isValid = true;
+        return priv;
+    }
+
+    // capturingCount doesn't include the implicit "0" capturing group
     QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
                                                                               matchType, matchOptions,
-                                                                              capturingCount);
+                                                                              capturingCount + 1);
 
     // this is mutex protected
     const pcre16_extra *currentStudyData = const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
@@ -1311,8 +1328,10 @@ QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExp
       hasMatch(false), hasPartialMatch(false), isValid(false)
 {
     Q_ASSERT(capturingCount >= 0);
-    const int captureOffsetsCount = (capturingCount + 1) * 3;
-    capturedOffsets.resize(captureOffsetsCount);
+    if (capturingCount > 0) {
+        const int captureOffsetsCount = capturingCount * 3;
+        capturedOffsets.resize(captureOffsetsCount);
+    }
 }
 
 
@@ -1636,6 +1655,26 @@ QString QRegularExpression::escape(const QString &str)
 
     result.squeeze();
     return result;
+}
+
+/*!
+    \since 5.1
+
+    Constructs a valid, empty QRegularExpressionMatch object. The regular
+    expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    The object will report no match through the hasMatch() and the
+    hasPartialMatch() member functions.
+*/
+QRegularExpressionMatch::QRegularExpressionMatch()
+    : d(new QRegularExpressionMatchPrivate(QRegularExpression(),
+                                           QString(),
+                                           QRegularExpression::NoMatch,
+                                           QRegularExpression::NoMatchOption))
+{
+    d->isValid = true;
 }
 
 /*!
@@ -1978,6 +2017,26 @@ bool QRegularExpressionMatch::isValid() const
 */
 QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(QRegularExpressionMatchIteratorPrivate &dd)
     : d(&dd)
+{
+}
+
+/*!
+    \since 5.1
+
+    Constructs an empty, valid QRegularExpressionMatchIterator object. The
+    regular expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    Invoking the hasNext() member function on the constructed object will
+    return false, as the iterator is not iterating on a valid sequence of
+    matches.
+*/
+QRegularExpressionMatchIterator::QRegularExpressionMatchIterator()
+    : d(new QRegularExpressionMatchIteratorPrivate(QRegularExpression(),
+                                                   QRegularExpression::NoMatch,
+                                                   QRegularExpression::NoMatchOption,
+                                                   QRegularExpressionMatch()))
 {
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -45,6 +45,7 @@
 #include "qvarlengtharray.h"
 
 #include <private/harfbuzz-shaper.h>
+#include <private/qharfbuzz_p.h>
 
 #define FLAG(x) (1 << (x))
 
@@ -615,7 +616,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = items[i].position - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
             start = i;
@@ -624,7 +625,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = length - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
         }

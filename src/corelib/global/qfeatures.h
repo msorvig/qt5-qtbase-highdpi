@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -153,6 +153,9 @@
 
 // Properties
 //#define QT_NO_PROPERTIES
+
+// QRegularExpression
+//#define QT_NO_REGULAREXPRESSION
 
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
@@ -378,7 +381,7 @@
 #define QT_NO_CONTEXTMENU
 #endif
 
-// QtDBus module
+// Qt D-Bus module
 #if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_DOM))
 #define QT_NO_DBUS
 #endif

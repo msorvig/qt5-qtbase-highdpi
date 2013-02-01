@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -123,8 +123,10 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowMinimizeButtonHint;
     if (windowMaximizeButtonCheckBox->isChecked())
         flags |= Qt::WindowMaximizeButtonHint;
+#if QT_VERSION >= 0x050000
     if (windowFullscreenButtonCheckBox->isChecked())
         flags |= Qt::WindowFullscreenButtonHint;
+#endif
     if (windowCloseButtonCheckBox->isChecked())
         flags |= Qt::WindowCloseButtonHint;
     if (windowContextHelpButtonCheckBox->isChecked())
@@ -153,7 +155,9 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowSystemMenuCheckBox->setChecked(flags & Qt::WindowSystemMenuHint);
     windowMinimizeButtonCheckBox->setChecked(flags & Qt::WindowMinimizeButtonHint);
     windowMaximizeButtonCheckBox->setChecked(flags & Qt::WindowMaximizeButtonHint);
+#if QT_VERSION >= 0x050000
     windowFullscreenButtonCheckBox->setChecked(flags & Qt::WindowFullscreenButtonHint);
+#endif
     windowCloseButtonCheckBox->setChecked(flags & Qt::WindowCloseButtonHint);
     windowContextHelpButtonCheckBox->setChecked(flags & Qt::WindowContextHelpButtonHint);
     windowShadeButtonCheckBox->setChecked(flags & Qt::WindowShadeButtonHint);

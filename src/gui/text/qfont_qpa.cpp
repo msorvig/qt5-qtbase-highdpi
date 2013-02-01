@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -72,7 +72,7 @@ QString QFont::defaultFamily() const
 {
     QPlatformFontDatabase *fontDB = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     const QStringList fallbacks = fontDB->fallbacksForFamily(QString(), QFont::StyleNormal
-                                      , QFont::StyleHint(d->request.styleHint), QUnicodeTables::Common);
+                                      , QFont::StyleHint(d->request.styleHint), QChar::Script_Common);
     if (!fallbacks.isEmpty())
         return fallbacks.first();
     return QString();

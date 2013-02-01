@@ -39,91 +39,31 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QWINDOWCONTAINER_H
+#define QWINDOWCONTAINER_H
 
-#if !defined(QT_NO_RAWFONT)
-
-#include "qrawfont_p.h"
-#include "qfontengine_ft_p.h"
-#include "quuid.h"
-
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFontEngineFTRawFont
+class QWindowContainerPrivate;
 
-        : public QFontEngineFT
-
+class QWindowContainer : public QWidget
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QWindowContainer)
+
 public:
-    QFontEngineFTRawFont(const QFontDef &fontDef)
-        : QFontEngineFT(fontDef)
-    {
-    }
+    explicit QWindowContainer(QWindow *embeddedWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    ~QWindowContainer();
 
-    void updateFamilyNameAndStyle()
-    {
-        fontDef.family = QString::fromUtf8(freetype->face->family_name);
+protected:
+    bool event(QEvent *ev);
 
-        if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
-            fontDef.style = QFont::StyleItalic;
-
-        if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
-            fontDef.weight = QFont::Bold;
-    }
-
-    bool initFromData(const QByteArray &fontData)
-    {
-        FaceId faceId;
-        faceId.filename = "";
-        faceId.index = 0;
-        faceId.uuid = QUuid::createUuid().toByteArray();
-
-        return init(faceId, true, Format_None, fontData);
-    }
+private slots:
+    void focusWindowChanged(QWindow *focusWindow);
 };
-
-
-void QRawFontPrivate::platformCleanUp()
-{
-    // Font engine handles all resources
-}
-
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, qreal pixelSize,
-                                           QFont::HintingPreference hintingPreference)
-{
-    Q_ASSERT(fontEngine == 0);
-
-    QFontDef fontDef;
-    fontDef.pixelSize = pixelSize;
-
-    QFontEngineFTRawFont *fe = new QFontEngineFTRawFont(fontDef);
-    if (!fe->initFromData(fontData)) {
-        delete fe;
-        return;
-    }
-
-    fe->updateFamilyNameAndStyle();
-
-    switch (hintingPreference) {
-    case QFont::PreferNoHinting:
-        fe->setDefaultHintStyle(QFontEngineFT::HintNone);
-        break;
-    case QFont::PreferFullHinting:
-        fe->setDefaultHintStyle(QFontEngineFT::HintFull);
-        break;
-    case QFont::PreferVerticalHinting:
-        fe->setDefaultHintStyle(QFontEngineFT::HintLight);
-        break;
-    default:
-        // Leave it as it is
-        break;
-    }
-
-    fontEngine = fe;
-    fontEngine->ref.ref();
-}
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_RAWFONT
+#endif // QWINDOWCONTAINER_H

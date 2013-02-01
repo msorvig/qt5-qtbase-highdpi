@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -658,6 +658,13 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+}
+
+void QCocoaWindow::requestActivateWindow()
+{
+    NSWindow *window = [m_contentView window];
+    [ window makeFirstResponder : m_contentView ];
+    [ window makeKeyWindow ];
 }
 
 NSWindow * QCocoaWindow::createNSWindow()

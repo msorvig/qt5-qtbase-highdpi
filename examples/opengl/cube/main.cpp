@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("cube");
     app.setApplicationVersion("0.1");
-#ifdef QT_NO_OPENGL
+#ifndef QT_NO_OPENGL
     MainWidget widget;
     widget.show();
 #else

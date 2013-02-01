@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -50,8 +50,6 @@
 
 @class NSMenuItem;
 @class NSMenu;
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -109,8 +107,6 @@ private:
     bool m_merged;
     quintptr m_tag;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

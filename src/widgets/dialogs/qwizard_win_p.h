@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -87,6 +87,7 @@ public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
+    void updateCustomMargins();
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);
@@ -94,9 +95,8 @@ public:
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
     QVistaBackButton *backButton() const { return backButton_; }
-    void disconnectBackButton() { if (backButton_) backButton_->disconnect(); }
+    void disconnectBackButton();
     void hideBackButton() { if (backButton_) backButton_->hide(); }
-    void setWindowPosHack();
     QColor basicWindowFrameColor();
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
     static VistaState vistaState();
@@ -105,10 +105,8 @@ public:
         return int(QStyleHelper::dpiScaled(
                 QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
     }
-    static int topOffset() {
-        static int aeroOffset = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
-                                QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
-        return (titleBarSize() + (vistaState() == VistaAero ? aeroOffset : 3)); }
+    static int topOffset();
+
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);

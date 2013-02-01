@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -124,6 +124,7 @@ public:
     virtual bool open(QIODevice::OpenMode openMode);
     virtual bool close();
     virtual bool flush();
+    virtual bool syncToDisk();
     virtual qint64 size() const;
     virtual qint64 pos() const;
     virtual bool seek(qint64 pos);
@@ -131,6 +132,7 @@ public:
     virtual bool remove();
     virtual bool copy(const QString &newName);
     virtual bool rename(const QString &newName);
+    virtual bool renameOverwrite(const QString &newName);
     virtual bool link(const QString &newName);
     virtual bool mkdir(const QString &dirName, bool createParentDirectories) const;
     virtual bool rmdir(const QString &dirName, bool recurseParentDirectories) const;

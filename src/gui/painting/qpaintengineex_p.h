@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -60,8 +60,6 @@
 #include <private/qpainter_p.h>
 #include <private/qvectorpath_p.h>
 
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -164,7 +162,7 @@ public:
         IsEmulationEngine = 0x02    // If set, this object is a QEmulationEngine.
     };
     virtual uint flags() const {return 0;}
-    virtual bool supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const;
+    virtual bool requiresPretransformedGlyphPositions(QFontEngine *fontEngine, const QTransform &m) const;
     virtual bool shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const;
 
 protected:
@@ -191,7 +189,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

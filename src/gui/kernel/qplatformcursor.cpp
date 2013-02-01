@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -94,6 +94,10 @@ QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
     Implementation of this method is mandatory for a subclass of QPlatformCursor.
 
     \a windowCursor is a pointer to the QCursor that should be displayed.
+
+    To unset the cursor of \a window, 0 is passed. This means \a window does not have
+    a cursor set and the cursor of a the first parent window which has a cursor explicitly
+    set or the system default cursor should take effect.
 
     \a window is a pointer to the window currently displayed at QCursor::pos(). Note
     that this may be 0 if the current position is not occupied by a displayed widget.

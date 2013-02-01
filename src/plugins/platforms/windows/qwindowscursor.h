@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -55,11 +55,13 @@ class QWindowsWindowCursorData;
 class QWindowsWindowCursor
 {
 public:
+    QWindowsWindowCursor();
     explicit QWindowsWindowCursor(const QCursor &c);
     ~QWindowsWindowCursor();
     QWindowsWindowCursor(const QWindowsWindowCursor &c);
     QWindowsWindowCursor &operator=(const QWindowsWindowCursor &c);
 
+    bool isNull() const;
     QCursor cursor() const;
     HCURSOR handle() const;
 
@@ -81,11 +83,14 @@ public:
     static QPoint mousePosition();
 
     QWindowsWindowCursor standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
+    QWindowsWindowCursor pixmapWindowCursor(const QCursor &c);
 
 private:
     typedef QHash<Qt::CursorShape, QWindowsWindowCursor> StandardCursorCache;
+    typedef QHash<qint64, QWindowsWindowCursor> PixmapCursorCache;
 
     StandardCursorCache m_standardCursorCache;
+    PixmapCursorCache m_pixmapCursorCache;
 };
 
 QT_END_NAMESPACE

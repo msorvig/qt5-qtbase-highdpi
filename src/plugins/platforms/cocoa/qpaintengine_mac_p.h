@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -121,8 +121,6 @@ public:
     void drawEllipse(const QRect &r) { QPaintEngine::drawEllipse(r); }
     void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
     { QPaintEngine::drawPolygon(points, pointCount, mode); }
-
-    bool supportsTransformations(qreal, const QTransform &) const { return true; };
 
 protected:
     friend class QMacPrintEngine;

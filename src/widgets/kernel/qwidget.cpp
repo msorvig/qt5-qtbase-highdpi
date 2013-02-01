@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -6908,14 +6908,15 @@ void QWidget::setUpdatesEnabled(bool enable)
     Shows the widget and its child widgets. This function is
     equivalent to setVisible(true) in the normal case, and equivalent
     to showFullScreen() if the QStyleHints::showIsFullScreen() hint
-    is true.
+    is true and the window is not a popup.
 
     \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
-    showNormal(), isVisible()
+    showNormal(), isVisible(), windowFlags()
 */
 void QWidget::show()
 {
-    if (isWindow() && qApp->styleHints()->showIsFullScreen())
+    bool isPopup = data->window_flags & Qt::Popup & ~Qt::Window;
+    if (isWindow() && !isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
     else
         setVisible(true);
@@ -8846,6 +8847,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
 #ifndef QT_NO_IM
     Q_D(QWidget);
+    if (d->imHints == hints)
+        return;
     d->imHints = hints;
     qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
@@ -9086,7 +9089,7 @@ QLayout *QWidget::layout() const
     existing layout manager (returned by layout()) before you can
     call setLayout() with the new layout.
 
-    If \a layout is the layout manger on a different widget, setLayout()
+    If \a layout is the layout manager on a different widget, setLayout()
     will reparent the layout and make it the layout manager for this widget.
 
     Example:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +46,8 @@
 #include <QtCore/qvarlengtharray.h>
 
 #include <stdlib.h> // for realpath()
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -174,9 +176,16 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 #else
     char *ret = 0;
 # if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
-    // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
+    // When using -mmacosx-version-min=10.4, we get the legacy realpath implementation,
+    // which does not work properly with the realpath(X,0) form. See QTBUG-28282.
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
-        ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+        ret = (char*)malloc(PATH_MAX + 1);
+        if (ret && realpath(entry.nativeFilePath().constData(), (char*)ret) == 0) {
+            const int savedErrno = errno; // errno is checked below, and free() might change it
+            free(ret);
+            errno = savedErrno;
+            ret = 0;
+        }
     } else {
         // on 10.5 we can use FSRef to resolve the file path.
         QString path = QDir::cleanPath(entry.filePath());
@@ -252,6 +261,20 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 }
 
 //static
+QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+{
+    struct stat statResult;
+    if (stat(entry.nativeFilePath().constData(), &statResult)) {
+        qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
+        return QByteArray();
+    }
+    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
+    result += ':';
+    result += QByteArray::number(quint64(statResult.st_ino));
+    return result;
+}
+
+//static
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
@@ -263,7 +286,7 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 
     struct passwd *pw = 0;
 #if !defined(Q_OS_INTEGRITY)
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
     struct passwd entry;
     getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
 #else
@@ -287,7 +310,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 
     struct group *gr = 0;
 #if !defined(Q_OS_INTEGRITY)
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (size_max == -1)
         size_max = 1024;
@@ -610,7 +633,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 QString QFileSystemEngine::homePath()
 {
     QString home = QFile::decodeName(qgetenv("HOME"));
-    if (home.isNull())
+    if (home.isEmpty())
         home = rootPath();
     return QDir::cleanPath(home);
 }
@@ -662,8 +685,16 @@ QFileSystemEntry QFileSystemEngine::currentPath()
         }
 #else
         char currentName[PATH_MAX+1];
-        if (::getcwd(currentName, PATH_MAX))
+        if (::getcwd(currentName, PATH_MAX)) {
+#if defined(Q_OS_VXWORKS) && defined(VXWORKS_VXSIM)
+            QByteArray dir(currentName);
+            if (dir.indexOf(':') < dir.indexOf('/'))
+                dir.remove(0, dir.indexOf(':')+1);
+
+            qstrncpy(currentName, dir.constData(), PATH_MAX);
+#endif
             result = QFileSystemEntry(QByteArray(currentName), QFileSystemEntry::FromNativePath());
+        }
 # if defined(QT_DEBUG)
         if (result.isEmpty())
             qWarning("QFileSystemEngine::currentPath: getcwd() failed");

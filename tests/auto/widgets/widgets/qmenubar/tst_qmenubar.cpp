@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1122,7 +1122,6 @@ void tst_QMenuBar::check_menuPosition()
 
 void tst_QMenuBar::task223138_triggered()
 {
-    qRegisterMetaType<QAction *>("QAction *");
     //we create a window with submenus and we check that both menubar and menus get the triggered signal
     QMainWindow win;
     QMenu *menu = win.menuBar()->addMenu("test");

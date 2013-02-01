@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -380,10 +380,13 @@ class QQNXLocaleData: public QObject
 public:
     QQNXLocaleData();
     virtual ~QQNXLocaleData();
-    void readPPSLocale();
 
 public Q_SLOTS:
     void updateMeasurementSystem();
+    void installSocketNotifier();
+
+private:
+    void initialize();
 
 public:
     uint ppsMeasurement;

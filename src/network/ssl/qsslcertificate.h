@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -43,6 +43,10 @@
 #ifndef QSSLCERTIFICATE_H
 #define QSSLCERTIFICATE_H
 
+#ifdef verify
+#undef verify
+#endif
+
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
@@ -51,8 +55,6 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qmap.h>
 #include <QtNetwork/qssl.h>
-
-QT_BEGIN_HEADER
 
 #ifndef QT_NO_SSL
 
@@ -159,7 +161,5 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSslCertificate)
 
 #endif // QT_NO_SSL
-
-QT_END_HEADER
 
 #endif

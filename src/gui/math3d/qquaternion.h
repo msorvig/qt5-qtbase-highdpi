@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,8 +44,6 @@
 
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -323,7 +321,5 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QQuaternion &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

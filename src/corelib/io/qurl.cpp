@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
@@ -3762,6 +3762,37 @@ QString QUrl::errorString() const
     if (msg.endsWith(QLatin1Char(',')))
         msg.chop(1);
     return msg;
+}
+
+/*!
+    \since 5.1
+
+    Converts a list of \a urls into a list of QStrings, using toString(\a options).
+*/
+QStringList QUrl::toStringList(const QList<QUrl> &urls, FormattingOptions options)
+{
+    QStringList lst;
+    lst.reserve(urls.size());
+    foreach (const QUrl &url, urls)
+        lst.append(url.toString(options));
+    return lst;
+
+}
+
+/*!
+    \since 5.1
+
+    Converts a list of strings representing \a urls into a list of urls, using QUrl(str, \a mode).
+    Note that this means all strings must be urls, not for instance local paths.
+*/
+QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
+{
+    QList<QUrl> lst;
+    lst.reserve(urls.size());
+    foreach (const QString &str, urls) {
+        lst.append(QUrl(str, mode));
+    }
+    return lst;
 }
 
 /*!

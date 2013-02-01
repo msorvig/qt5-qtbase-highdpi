@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1055,11 +1055,11 @@ signals:
 void tst_QDBusConnection::serviceRegistrationRaceCondition()
 {
     // There was a race condition in the updating of list of name owners in
-    // QtDBus. When the user connects to a signal coming from a given
+    // Qt D-Bus. When the user connects to a signal coming from a given
     // service, we must listen for NameOwnerChanged signals relevant to that
     // name and update when the owner changes. However, it's possible that we
     // receive in one chunk from the server both the NameOwnerChanged signal
-    // about the service and the signal we're interested in. Since QtDBus
+    // about the service and the signal we're interested in. Since Qt D-Bus
     // posts events in order to handle the incoming signals, the update
     // happens too late.
 
@@ -1200,6 +1200,19 @@ void tst_QDBusConnection::registerVirtualObject()
         QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
         QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
     }
+
+    {
+        // Register object, make sure no SubPath handling object can be registered on a parent path.
+        // (same as above, but deeper)
+        QObject objectAtSubPath;
+        QVERIFY(con.registerObject(childChildPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&objectAtSubPath));
+
+        VirtualObject obj;
+        QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    }
+
     QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
     QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
     QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(0));

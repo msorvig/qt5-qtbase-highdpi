@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,16 +44,12 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #pragma qt_no_master_include
 #pragma qt_sync_stop_processing
 #endif
@@ -142,6 +138,5 @@ public:
 #define Q_BASIC_ATOMIC_INITIALIZER(a) { (a) }
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QOLDBASICATOMIC_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1856,15 +1856,12 @@ void QColorDialog::setVisible(bool visible)
     }
 #else
 
-    if (!(options() & DontUseNativeDialog))
+    if (!(options() & DontUseNativeDialog) && d->nativeDialogInUse) {
         d->setNativeDialogVisible(visible);
-
-    if (d->nativeDialogInUse) {
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
         // updates the state correctly, but skips showing the non-native version:
         setAttribute(Qt::WA_DontShowOnScreen);
     } else {
-        d->nativeDialogInUse = false;
         setAttribute(Qt::WA_DontShowOnScreen, false);
     }
 #endif

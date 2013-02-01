@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include "qeglfswindow.h"
 #include "qeglfscursor.h"
 #include "qeglfshooks.h"
+#include "qeglfsintegration.h"
 
 #include <QtDebug>
 
@@ -50,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                              EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(hooks->surfaceFormatFor(format), share, display, eglApi)
+    : QEGLPlatformContext(format, share, display, QEglFSIntegration::chooseConfig(display, format), eglApi)
 {
 }
 

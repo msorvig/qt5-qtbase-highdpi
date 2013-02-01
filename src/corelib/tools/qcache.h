@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,8 +43,6 @@
 #define QCACHE_H
 
 #include <QtCore/qhash.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -199,7 +197,5 @@ void QCache<Key,T>::trim(int m)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCACHE_H

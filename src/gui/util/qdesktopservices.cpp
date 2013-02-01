@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -143,7 +143,10 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     same argument, and it will try to open the URL using the
     appropriate mechanism for the user's desktop environment.
 
-    \sa QSystemTrayIcon, QProcess
+    \note Since Qt 5, storageLocation() and displayName() are replaced by functionality
+    provided by the QStandardPaths class.
+
+    \sa QSystemTrayIcon, QProcess, QStandardPaths
 */
 
 /*!

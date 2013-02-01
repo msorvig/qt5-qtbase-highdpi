@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,7 +54,9 @@
 #include <map>
 #include <new>
 
-QT_BEGIN_HEADER
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -327,6 +329,14 @@ class QMap
 
 public:
     inline QMap() : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QMap(std::initializer_list<std::pair<Key,T> > list)
+        : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null)))
+    {
+        for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
+            insert(it->first, it->second);
+    }
+#endif
     QMap(const QMap<Key, T> &other);
 
     inline ~QMap() { if (!d->ref.deref()) d->destroy(); }
@@ -960,6 +970,13 @@ class QMultiMap : public QMap<Key, T>
 {
 public:
     QMultiMap() {}
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QMultiMap(std::initializer_list<std::pair<Key,T> > list)
+    {
+        for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
+            insert(it->first, it->second);
+    }
+#endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
     inline void swap(QMultiMap<Key, T> &other) { QMap<Key, T>::swap(other); }
 
@@ -1071,7 +1088,5 @@ Q_DECLARE_ASSOCIATIVE_ITERATOR(Map)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Map)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMAP_H

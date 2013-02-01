@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "private/qwindow_p.h"
 #include "qwidgetwindow_qpa_p.h"
 
 #include "private/qwidget_p.h"
@@ -60,8 +61,23 @@ extern int openPopupCount;
 bool qt_replay_popup_mouse_event = false;
 extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
+class QWidgetWindowPrivate : public QWindowPrivate
+{
+    Q_DECLARE_PUBLIC(QWidgetWindow)
+public:
+    QWindow *eventReceiver() {
+        Q_Q(QWidgetWindow);
+        QWindow *w = q;
+        while (w->parent() && qobject_cast<QWidgetWindow *>(w) && qobject_cast<QWidgetWindow *>(w->parent())) {
+            w = w->parent();
+        }
+        return w;
+    }
+};
+
 QWidgetWindow::QWidgetWindow(QWidget *widget)
-    : m_widget(widget)
+    : QWindow(*new QWidgetWindowPrivate(), 0)
+    , m_widget(widget)
 {
     updateObjectName();
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
@@ -597,12 +613,14 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
             if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
                 tle->normalGeometry = m_widget->geometry();
         widgetState |= Qt::WindowMaximized;
+        widgetState &= ~(Qt::WindowMinimized | Qt::WindowFullScreen);
         break;
     case Qt::WindowFullScreen:
         if (effectiveState(widgetState) == Qt::WindowNoState)
             if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
                 tle->normalGeometry = m_widget->geometry();
         widgetState |= Qt::WindowFullScreen;
+        widgetState &= ~(Qt::WindowMinimized);
         break;
     case Qt::WindowActive: // Not handled by QWindow
         break;

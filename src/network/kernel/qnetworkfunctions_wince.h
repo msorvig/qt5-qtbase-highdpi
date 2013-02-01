@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -50,8 +50,6 @@
 
 #include <qt_windows.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 DECLARE_HANDLE(SC_HANDLE);
@@ -95,8 +93,6 @@ typedef LPENUM_SERVICE_STATUS_PROCESSA LPENUM_SERVICE_STATUS_PROCESS;
 #endif // UNICODE
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // Q_OS_WINCE
 #endif // QNETWORKFUNCTIONS_WINCE_H

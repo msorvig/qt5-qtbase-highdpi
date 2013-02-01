@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -316,7 +316,6 @@ void tst_QDateTimeEdit::getSetCheck()
 
 tst_QDateTimeEdit::tst_QDateTimeEdit()
 {
-    qRegisterMetaType<QList<int> >("QList<int>");
 }
 
 tst_QDateTimeEdit::~tst_QDateTimeEdit()
@@ -759,6 +758,11 @@ void tst_QDateTimeEdit::displayFormat()
 
 void tst_QDateTimeEdit::selectAndScrollWithKeys()
 {
+#ifdef Q_OS_MAC
+    QSKIP("QTBUG-23674");
+    return;
+#endif
+
     qApp->setActiveWindow(testWidget);
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("dd/MM/yyyy");
@@ -769,9 +773,6 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     QTest::keyClick(testWidget, Qt::Key_Home);
 #endif
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ShiftModifier);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23674", Abort);
-#endif
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("1"));
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ShiftModifier);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11"));

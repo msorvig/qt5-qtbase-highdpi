@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -831,6 +831,7 @@ CFG_AVX=auto
 CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
+CFG_ACCESSIBILITY_ATSPI_BRIDGE=no # will be enabled depending on dbus and accessibility being enabled
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_MIPS_DSP=auto
@@ -842,6 +843,7 @@ CFG_GETADDRINFO=auto
 CFG_IPV6IFNAME=auto
 CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
+CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_HARFBUZZ=no
@@ -2623,6 +2625,11 @@ else
     CFG_FRAMEWORK=no
 fi
 
+# disable GTK style support auto-detection on Mac
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
+    CFG_QGTKSTYLE=no
+fi
+
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
@@ -2739,6 +2746,7 @@ libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
 DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
+/ \(framework directory\)$/ { next }
 yup { print substr($0, 2) }
 /^\#include </ { yup=1 }
 ' | sort -u`
@@ -3087,10 +3095,14 @@ Configure options:
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
     -no-accessibility .. Do not compile Accessibility support.
+                         Disabling accessibility is not recommended, as it will break QStyle
+                         and may break other internal parts of Qt.
+                         With this switch you create a source incompatible version of Qt,
+                         which is unsupported.
  +  -accessibility ..... Compile Accessibility support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
-    -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
+    -qt-sql-<driver> ... Enable a SQL <driver> in the Qt SQL module, by default
                          none are turned on.
     -plugin-sql-<driver> Enable SQL <driver> as a plugin to be linked to
                          at run time.
@@ -3176,11 +3188,11 @@ Additional options:
                          ($QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
-    -no-gui ............ Don't build the QtGui library and dependencies.
- +  -gui ............... Build the QtGui library and dependencies.
+    -no-gui ............ Don't build the Qt GUI module and dependencies.
+ +  -gui ............... Build the Qt GUI module and dependencies.
 
-    -no-widgets ........ Don't build the QtWidgets library and dependencies.
- +  -widgets ........... Build the QtWidgets library and dependencies.
+    -no-widgets ........ Don't build the Qt Widgets module and dependencies.
+ +  -widgets ........... Build the Qt Widgets module and dependencies.
 
     -R <string> ........ Add an explicit runtime library path to the Qt
                          libraries.
@@ -3222,9 +3234,9 @@ Additional options:
  $PHN  -no-pch ............ Do not use precompiled header support.
  $PHY  -pch ............... Use precompiled header support.
 
- $DBN  -no-dbus ........... Do not compile the QtDBus module.
- $DBY  -dbus .............. Compile the QtDBus module and dynamically load libdbus-1.
-    -dbus-linked ....... Compile the QtDBus module and link to libdbus-1.
+ $DBN  -no-dbus ........... Do not compile the Qt D-Bus module.
+ $DBY  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
+    -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
@@ -4425,7 +4437,7 @@ if [ "$CFG_DBUS" != "no" ]; then
         elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             # CFG_DBUS is "yes" or "linked" here
 
-            echo "The QtDBus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
+            echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -4943,20 +4955,19 @@ if [ "$CFG_KMS" = "yes" ]; then
 fi
 
 # Detect accessibility support
-if [ "$CFG_ACCESSIBILITY" != "no" ]; then
-    if [ "$CFG_XCB" = "no" ]; then
-        CFG_ACCESSIBILITY=yes
-    else
-        # linux/xcb accessibility needs dbus
-        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ]; then
-            CFG_ACCESSIBILITY=yes
+if [ "$CFG_ACCESSIBILITY" = "no" ]; then
+    echo >&2 "Warning: Disabling Accessibility. This version of Qt is unsupported."
+else
+    CFG_ACCESSIBILITY=yes
+
+    # linux/xcb accessibility bridge needs dbus
+    if [ "$CFG_XCB" != "no" ]; then
+        if [ "$CFG_DBUS" != "no" ]; then
+            CFG_ACCESSIBILITY_ATSPI_BRIDGE=yes
+            QT_CONFIG="$QT_CONFIG accessibility-atspi-bridge"
         else
-            if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-                CFG_ACCESSIBILITY=no
-            else
-                echo "Accessibility support needs DBus."
-                exit 101
-            fi
+            echo >&2 "Warning: Disabling Linux Accessibility Bridge: DBus is missing."
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ACCESSIBILITY_ATSPI_BRIDGE"
         fi
     fi
 fi
@@ -5096,6 +5107,23 @@ if [ "$CFG_INOTIFY" != "no" ]; then
 	else
 	    CFG_INOTIFY=no
 	fi
+    fi
+fi
+
+# find if the platform provides eventfd
+if [ "$CFG_EVENTFD" != "no" ]; then
+    if compileTest unix/eventfd "eventfd"; then
+        CFG_EVENTFD=yes
+    else
+        if [ "$CFG_EVENTFD" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "eventfd support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_EVENTFD=no
+        fi
     fi
 fi
 
@@ -5386,6 +5414,9 @@ fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
 fi
+if [ "$CFG_EVENTFD" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eventfd"
+fi
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
 elif [ "$CFG_LIBJPEG" = "system" ]; then
@@ -5645,7 +5676,7 @@ EOF
 esac
 
 if [ "$CFG_GUI" = "no" ]; then
-    # WebKit requires QtGui
+    # WebKit requires Qt GUI
     canBuildWebKit="no"
 fi
 
@@ -5707,6 +5738,19 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
 fi
 
 case "$QMAKE_CONF_COMPILER" in
+*clang++*)
+    # Clang
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
+/^Apple clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
+/^clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
+    eval "$COMPILER_VERSION"
+    ;;
+*icpc)
+    # Intel CC
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
+s/icpc version \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\) .*$/QT_ICC_MAJOR_VERSION=\1; QT_ICC_MINOR_VERSION=\2; QT_ICC_PATCH_VERSION=\3/p'`
+    eval "$COMPILER_VERSION"
+    ;;
 *g++*)
     # GNU C++
     COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -dumpversion 2>/dev/null`
@@ -5862,6 +5906,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
+[ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
@@ -6046,6 +6091,19 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
 fi
+if [ -n "$QT_ICC_MAJOR_VERSION" ]; then
+    echo "QT_ICC_MAJOR_VERSION = $QT_ICC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_ICC_MINOR_VERSION = $QT_ICC_MINOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_ICC_PATCH_VERSION = $QT_ICC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_CLANG_MAJOR_VERSION = $QT_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_CLANG_MINOR_VERSION = $QT_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_APPLE_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_APPLE_CLANG_MAJOR_VERSION = $QT_APPLE_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_APPLE_CLANG_MINOR_VERSION = $QT_APPLE_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
     echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
@@ -6183,12 +6241,12 @@ if [ -n "$PKG_CONFIG" ]; then
 else
     echo "pkg-config ............. no"
 fi
-[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
-echo "QtConcurrent code ...... $CFG_CONCURRENT"
-echo "QtGui module ........... $CFG_GUI"
-echo "QtWidgets module ....... $CFG_WIDGETS"
+[ "$CFG_DBUS" = "no" ]     && echo "Qt D-Bus module ........ no"
+[ "$CFG_DBUS" = "yes" ]    && echo "Qt D-Bus module ........ yes (run-time)"
+[ "$CFG_DBUS" = "linked" ] && echo "Qt D-Bus module ........ yes (linked)"
+echo "Qt Concurrent code ..... $CFG_CONCURRENT"
+echo "Qt GUI module .......... $CFG_GUI"
+echo "Qt Widgets module ...... $CFG_WIDGETS"
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -231,7 +231,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             url.setUserInfo(QString());
             request.setUrl(url);
         }
-        // Will only be false if QtWebKit is performing a cross-origin XMLHttpRequest
+        // Will only be false if Qt WebKit is performing a cross-origin XMLHttpRequest
         // and withCredentials has not been set to true.
         if (request.withCredentials())
             connection->d_func()->createAuthorization(socket, request);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -55,8 +55,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qhash.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
@@ -97,7 +95,5 @@ protected:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMPRINTERSUPPORT_H

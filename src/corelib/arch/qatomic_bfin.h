@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,8 +43,6 @@
 #define QATOMIC_BFIN_H
 
 #include <QtCore/qoldbasicatomic.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -339,7 +337,5 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_BFIN_H

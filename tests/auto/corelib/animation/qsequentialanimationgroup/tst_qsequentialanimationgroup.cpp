@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -44,7 +44,6 @@
 #include <QtCore/qsequentialanimationgroup.h>
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
-Q_DECLARE_METATYPE(QAbstractAnimation*)
 
 class tst_QSequentialAnimationGroup : public QObject
 {
@@ -84,7 +83,6 @@ private slots:
 void tst_QSequentialAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-    qRegisterMetaType<QAbstractAnimation*>("QAbstractAnimation*");
 }
 
 void tst_QSequentialAnimationGroup::construction()

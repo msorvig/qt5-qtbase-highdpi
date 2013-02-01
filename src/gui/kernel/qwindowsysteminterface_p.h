@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -58,8 +58,6 @@
 #include <QPointer>
 #include <QMutex>
 #include <QList>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -424,7 +422,6 @@ public:
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };
 
-QT_END_HEADER
 QT_END_NAMESPACE
 
 #endif // QWINDOWSYSTEMINTERFACE_P_H

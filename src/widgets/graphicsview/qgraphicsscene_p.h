@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -157,7 +157,8 @@ public:
     int activationRefCount;
     int childExplicitActivation;
     void setActivePanelHelper(QGraphicsItem *item, bool duringActivationEvent);
-    void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
+    void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason,
+                            bool emitFocusChanged = true);
 
     QList<QGraphicsWidget *> popupWidgets;
     void addPopup(QGraphicsWidget *widget);

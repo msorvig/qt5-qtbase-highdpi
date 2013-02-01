@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -50,7 +50,6 @@
 #include <QtConcurrent/qtconcurrentrunbase.h>
 #include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -98,7 +97,7 @@ QFuture<T> run(T (*functionPointer)(Param1, Param2, Param3, Param4, Param5), con
     return (new StoredFunctorCall5<T, T (*)(Param1, Param2, Param3, Param4, Param5), Arg1, Arg2, Arg3, Arg4, Arg5>(functionPointer, arg1, arg2, arg3, arg4, arg5))->start();
 }
 
-#ifdef Q_COMPILER_DECLTYPE
+#if defined(Q_COMPILER_DECLTYPE) && defined(Q_COMPILER_AUTO_FUNCTION)
 
 template <typename Functor>
 auto run(Functor functor) -> typename QtPrivate::QEnableIf<!QtPrivate::HasResultType<Functor>::Value, QFuture<decltype(functor())> >::Type
@@ -340,7 +339,6 @@ QFuture<T> run(const Class *object, T (Class::*fn)(Param1, Param2, Param3, Param
 #endif // Q_QDOC
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_CONCURRENT
 

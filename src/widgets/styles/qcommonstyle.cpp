@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1151,7 +1151,7 @@ void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
     stopAnimation(animation->target());
     q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     animations.insert(animation->target(), animation);
-    animation->start();
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 /*! \internal */

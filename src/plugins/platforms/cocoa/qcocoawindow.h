@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -114,6 +114,8 @@ public:
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;
+
+    void requestActivateWindow();
 
     WId winId() const;
     void setParent(const QPlatformWindow *window);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -84,7 +84,8 @@ void QEglFSWindow::create()
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
     QSurfaceFormat platformFormat = hooks->surfaceFormatFor(window()->requestedFormat());
-    EGLConfig config = q_configFromGLFormat(display, platformFormat);
+    EGLConfig config = QEglFSIntegration::chooseConfig(display, platformFormat);
+
     m_format = q_glFormatFromConfig(display, config);
     m_window = hooks->createNativeWindow(hooks->screenSize(), m_format);
     m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
