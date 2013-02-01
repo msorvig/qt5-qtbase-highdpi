@@ -49,22 +49,6 @@
 
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
-class QT_PREPEND_NAMESPACE(QCocoaWindow);
-
-@interface QNSWindow : NSWindow {
-    @public QCocoaWindow *m_cocoaPlatformWindow;
-}
-
-- (void)clearPlatformWindow;
-- (BOOL)canBecomeKeyWindow;
-@end
-
-@interface QNSPanel : NSPanel {
-    @public QT_PREPEND_NAMESPACE(QCocoaWindow) *m_cocoaPlatformWindow;
-}
-- (void)clearPlatformWindow;
-- (BOOL)canBecomeKeyWindow;
-@end
 
 @class QNSWindowDelegate;
 
@@ -180,6 +164,21 @@ public: // for QNSView
 };
 
 QT_END_NAMESPACE
+
+@interface QNSWindow : NSWindow {
+    @public QCocoaWindow *m_cocoaPlatformWindow;
+}
+
+- (void)clearPlatformWindow;
+- (BOOL)canBecomeKeyWindow;
+@end
+
+@interface QNSPanel : NSPanel {
+    @public QT_PREPEND_NAMESPACE(QCocoaWindow) *m_cocoaPlatformWindow;
+}
+- (void)clearPlatformWindow;
+- (BOOL)canBecomeKeyWindow;
+@end
 
 #endif // QCOCOAWINDOW_H
 
