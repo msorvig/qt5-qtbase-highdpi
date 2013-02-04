@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 
 bool qt_debug_component();
 
+class QLibraryStore;
 class QLibraryPrivate
 {
 public:
@@ -82,12 +83,14 @@ public:
 #endif
     pHnd;
 
+    enum UnloadFlag { UnloadSys, NoUnloadSys };
+
     QString fileName, qualifiedFileName;
     QString fullVersion;
 
     bool load();
     bool loadPlugin(); // loads and resolves instance
-    bool unload();
+    bool unload(UnloadFlag flag = UnloadSys);
     void release();
     QFunctionPointer resolve(const char *);
 
@@ -128,7 +131,7 @@ private:
     QAtomicInt libraryUnloadCount;
 
     enum { IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
-    friend class QLibraryPrivateHasFriends;
+    friend class QLibraryStore;
 };
 
 QT_END_NAMESPACE

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSql module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,79 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QSQL_TDS_H
-#define QSQL_TDS_H
+#ifndef QGTK2THEME_H
+#define QGTK2THEME_H
 
-#include <QtSql/qsqlresult.h>
-#include <QtSql/qsqldriver.h>
-
-#ifdef Q_OS_WIN32
-#define WIN32_LEAN_AND_MEAN
-#ifndef Q_USE_SYBASE
-#define DBNTWIN32 // indicates 32bit windows dblib
-#endif
-#include <winsock2.h>
-#include <QtCore/qt_windows.h>
-#include <sqlfront.h>
-#include <sqldb.h>
-#define CS_PUBLIC
-#else
-#include <sybfront.h>
-#include <sybdb.h>
-#endif //Q_OS_WIN32
-
-#ifdef QT_PLUGIN
-#define Q_EXPORT_SQLDRIVER_TDS
-#else
-#define Q_EXPORT_SQLDRIVER_TDS Q_SQL_EXPORT
-#endif
+#include <private/qgenericunixthemes_p.h>
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-#pragma qt_no_master_include
-#pragma qt_sync_stop_processing
-#endif
-
-class QTDSDriverPrivate;
-class QTDSDriver;
-
-class Q_EXPORT_SQLDRIVER_TDS QTDSDriver : public QSqlDriver
+class QGtk2Theme : public QGnomeTheme
 {
-    Q_OBJECT
-    friend class QTDSResult;
 public:
-    explicit QTDSDriver(QObject* parent = 0);
-    QTDSDriver(LOGINREC* rec, const QString& host, const QString &db, QObject* parent = 0);
-    ~QTDSDriver();
-    bool hasFeature(DriverFeature f) const;
-    bool open(const QString & db,
-               const QString & user,
-               const QString & password,
-               const QString & host,
-               int port,
-               const QString& connOpts);
-    void close();
-    QStringList tables(QSql::TableType) const;
-    QSqlResult *createResult() const;
-    QSqlRecord record(const QString& tablename) const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
+    QGtk2Theme();
 
-    QString formatValue(const QSqlField &field,
-                         bool trimStrings) const;
-    QVariant handle() const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
-    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
-
-protected:
-    bool beginTransaction();
-    bool commitTransaction();
-    bool rollbackTransaction();
-private:
-    void init();
-    QTDSDriverPrivate *d;
+    static const char *name;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSQL_TDS_H
+#endif // QGTK2THEME_H
