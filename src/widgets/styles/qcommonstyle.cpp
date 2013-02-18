@@ -2143,9 +2143,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->save();
             p->setClipRect(opt->rect);
 
-            QRect checkRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, vopt, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, vopt, widget);
+            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
 
             // draw the background
             proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, widget);
@@ -4813,6 +4813,16 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                       }
         break;
 #endif // QT_NO_ITEMVIEWS
+#ifndef QT_NO_SPINBOX
+    case CT_SpinBox:
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            // Add button + frame widths
+            int buttonWidth = 20;
+            int fw = vopt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget) : 0;
+            sz += QSize(buttonWidth + 2*fw, 2*fw);
+        }
+        break;
+#endif
     case CT_ScrollBar:
     case CT_MenuBar:
     case CT_Menu:

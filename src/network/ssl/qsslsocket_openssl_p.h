@@ -39,6 +39,20 @@
 **
 ****************************************************************************/
 
+/****************************************************************************
+**
+** In addition, as a special exception, the copyright holders listed above give
+** permission to link the code of its release of Qt with the OpenSSL project's
+** "OpenSSL" library (or modified versions of the "OpenSSL" library that use the
+** same license as the original version), and distribute the linked executables.
+**
+** You must comply with the GNU General Public License version 2 in all
+** respects for all of the code used other than the "OpenSSL" code.  If you
+** modify this file, you may extend this exception to your version of the file,
+** but you are not obligated to do so.  If you do not wish to do so, delete
+** this exception statement from your version of this file.
+**
+****************************************************************************/
 
 #ifndef QSSLSOCKET_OPENSSL_P_H
 #define QSSLSOCKET_OPENSSL_P_H
@@ -61,7 +75,10 @@
 #if defined(OCSP_RESPONSE)
 #undef OCSP_RESPONSE
 #endif
+#if defined(X509_NAME)
+#undef X509_NAME
 #endif
+#endif // Q_OS_WIN
 
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
@@ -101,8 +118,6 @@ public:
     bool initSslContext();
     void destroySslContext();
     SSL *ssl;
-    SSL_CTX *ctx;
-    EVP_PKEY *pkey;
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;

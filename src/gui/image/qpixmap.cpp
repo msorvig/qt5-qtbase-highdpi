@@ -693,6 +693,9 @@ qreal QPixmap::devicePixelRatio() const
 */
 void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 {
+    if (isNull())
+        return;
+
     detach();
     data->setDevicePixelRatio(scaleFactor);
 }
@@ -774,6 +777,8 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         data.reset();
         return false;
     }
+
+    detach();
 
     QFileInfo info(fileName);
     QString key = QLatin1String("qt_pixmap")

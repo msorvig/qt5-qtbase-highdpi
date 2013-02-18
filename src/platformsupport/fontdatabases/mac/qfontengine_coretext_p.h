@@ -52,8 +52,6 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
-#if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-
 QT_BEGIN_NAMESPACE
 
 class QRawFontPrivate;
@@ -98,6 +96,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
+    virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
     virtual QFixed emSquareSize() const;
@@ -140,7 +139,5 @@ private:
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
 QT_END_NAMESPACE
-
-#endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 
 #endif // QFONTENGINE_CORETEXT_P_H

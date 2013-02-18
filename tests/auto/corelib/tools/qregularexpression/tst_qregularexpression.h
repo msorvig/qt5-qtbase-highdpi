@@ -72,10 +72,14 @@ private slots:
     void operatoreq();
     void captureCount_data();
     void captureCount();
+    void captureNames_data();
+    void captureNames();
     void pcreJitStackUsage_data();
     void pcreJitStackUsage();
     void regularExpressionMatch_data();
     void regularExpressionMatch();
+    void JOptionUsage_data();
+    void JOptionUsage();
 
 private:
     void provideRegularExpressions();

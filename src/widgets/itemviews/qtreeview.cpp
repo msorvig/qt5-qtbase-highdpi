@@ -52,10 +52,10 @@
 #include <qevent.h>
 #include <qpen.h>
 #include <qdebug.h>
+#include <QMetaMethod>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #include <qaccessible2.h>
-#include <QMetaMethod>
 #endif
 
 #include <private/qtreeview_p.h>
@@ -1100,7 +1100,7 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
 
     // Expand all parents if the parent(s) of the node are not expanded.
     QModelIndex parent = index.parent();
-    while (parent.isValid() && state() == NoState && d->itemsExpandable) {
+    while (parent != d->root && parent.isValid() && state() == NoState && d->itemsExpandable) {
         if (!isExpanded(parent))
             expand(parent);
         parent = d->model->parent(parent);

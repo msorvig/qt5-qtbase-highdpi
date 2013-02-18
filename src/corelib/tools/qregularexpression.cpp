@@ -979,12 +979,13 @@ void QRegularExpressionPrivate::compilePattern()
 void QRegularExpressionPrivate::getPatternInfo()
 {
     Q_ASSERT(compiledPattern);
+    Q_ASSERT(studyData == 0);
 
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
     // detect the settings for the newline
     unsigned long int patternNewlineSetting;
-    pcre16_fullinfo(compiledPattern, studyData, PCRE_INFO_OPTIONS, &patternNewlineSetting);
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_OPTIONS, &patternNewlineSetting);
     patternNewlineSetting &= PCRE_NEWLINE_CR  | PCRE_NEWLINE_LF | PCRE_NEWLINE_CRLF
             | PCRE_NEWLINE_ANY | PCRE_NEWLINE_ANYCRLF;
     if (patternNewlineSetting == 0) {
@@ -1012,6 +1013,14 @@ void QRegularExpressionPrivate::getPatternInfo()
     usingCrLfNewlines = (patternNewlineSetting == PCRE_NEWLINE_CRLF) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANY) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANYCRLF);
+
+    int hasJOptionChanged;
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_JCHANGED, &hasJOptionChanged);
+    if (hasJOptionChanged) {
+        qWarning("QRegularExpressionPrivate::getPatternInfo(): the pattern '%s'\n"
+                 "    is using the (?J) option; duplicate capturing group names are not supported by Qt",
+                 qPrintable(pattern));
+    }
 }
 
 
@@ -1487,6 +1496,8 @@ void QRegularExpression::setPatternOptions(PatternOptions options)
     Returns the number of capturing groups inside the pattern string,
     or -1 if the regular expression is not valid.
 
+    \note The implicit capturing group 0 is \e{not} included in the returned number.
+
     \sa isValid()
 */
 int QRegularExpression::captureCount() const
@@ -1494,6 +1505,71 @@ int QRegularExpression::captureCount() const
     if (!isValid()) // will compile the pattern
         return -1;
     return d->capturingCount;
+}
+
+/*!
+    \since 5.1
+
+    Returns a list of captureCount() + 1 elements, containing the names of the
+    named capturing groups in the pattern string. The list is sorted such that
+    the element of the list at position \c{i} is the name of the \c{i}-th
+    capturing group, if it has a name, or an empty string if that capturing
+    group is unnamed.
+
+    For instance, given the regular expression
+
+    \code
+        (?<day>\d\d)-(?<month>\d\d)-(?<year>\d\d\d\d) (\w+) (?<name>\w+)
+    \endcode
+
+    namedCaptureGroups() will return the following list:
+
+    \code
+        ("", "day", "month", "year", "", "name")
+    \endcode
+
+    which corresponds to the fact that the capturing group #0 (corresponding to
+    the whole match) has no name, the capturing group #1 has name "day", the
+    capturing group #2 has name "month", etc.
+
+    If the regular expression is not valid, returns an empty list.
+
+    \sa isValid(), QRegularExpressionMatch::captured(), QString::isEmpty()
+*/
+QStringList QRegularExpression::namedCaptureGroups() const
+{
+    if (!isValid()) // isValid() will compile the pattern
+        return QStringList();
+
+    // namedCapturingTable will point to a table of
+    // namedCapturingTableEntryCount entries, each one of which
+    // contains one ushort followed by the name, NUL terminated.
+    // The ushort is the numerical index of the name in the pattern.
+    // The length of each entry is namedCapturingTableEntrySize.
+    ushort *namedCapturingTable;
+    int namedCapturingTableEntryCount;
+    int namedCapturingTableEntrySize;
+
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMETABLE, &namedCapturingTable);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMECOUNT, &namedCapturingTableEntryCount);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMEENTRYSIZE, &namedCapturingTableEntrySize);
+
+    QStringList result;
+
+    // no QList::resize nor fill is available. The +1 is for the implicit group #0
+    result.reserve(d->capturingCount + 1);
+    for (int i = 0; i < d->capturingCount + 1; ++i)
+        result.append(QString());
+
+    for (int i = 0; i < namedCapturingTableEntryCount; ++i) {
+        const ushort * const currentNamedCapturingTableRow = namedCapturingTable +
+                                                             namedCapturingTableEntrySize * i;
+
+        const int index = *currentNamedCapturingTableRow;
+        result[index] = QString::fromUtf16(currentNamedCapturingTableRow + 1);
+    }
+
+    return result;
 }
 
 /*!

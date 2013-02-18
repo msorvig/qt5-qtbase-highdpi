@@ -851,15 +851,6 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
 
-    // On Mac, look inside the application bundle for the platform plugin.
-    // TODO (msorvig): Create proper cross-platform solution for loading
-    // deployed platform plugins
-#ifdef Q_OS_MAC
-    const QString bundlePluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
-    if (platformPluginPath.isEmpty() && QDir(bundlePluginPath).exists()) {
-        platformPluginPath = bundlePluginPath;
-    }
-#endif
 
     QByteArray platformName;
 #ifdef QT_QPA_DEFAULT_PLATFORM_NAME
@@ -1674,10 +1665,10 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 
 void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e)
 {
-    if (e->fileName.isEmpty())
+    if (e->url.isEmpty())
         return;
 
-    QFileOpenEvent event(e->fileName);
+    QFileOpenEvent event(e->url);
     QGuiApplication::sendSpontaneousEvent(qApp, &event);
 }
 

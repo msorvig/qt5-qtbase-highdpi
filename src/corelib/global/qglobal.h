@@ -151,6 +151,10 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+// ### Qt6: remove me.
+#define QT_BEGIN_HEADER
+#define QT_END_HEADER
+
 #if defined(Q_OS_DARWIN) && !defined(QT_LARGEFILE_SUPPORT)
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
@@ -507,6 +511,16 @@ Q_DECL_CONSTEXPR inline const T &qMax(const T &a, const T &b) { return (a < b) ?
 template <typename T>
 Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
+
+#ifdef Q_OS_DARWIN
+#  define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) \
+    (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
+    (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios)
+
+#  define QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, ios) \
+    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MIN_REQUIRED < osx) || \
+    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MIN_REQUIRED < ios)
+#endif
 
 /*
    Data stream functions are provided by many classes (defined in qdatastream.h)
@@ -930,6 +944,7 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
+Q_CORE_EXPORT bool qunsetenv(const char *varName);
 
 Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT;
 Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT;

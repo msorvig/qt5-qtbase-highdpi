@@ -130,7 +130,6 @@ public:
 
     \value StereoBuffers Used to request stereo buffers in the surface format.
     \value DebugContext Used to request a debug context with extra debugging information.
-        This requires OpenGL version 3.0 or higher.
     \value DeprecatedFunctions Used to request that deprecated functions be included
         in the OpenGL context profile. If not specified, you should get a forward compatible context
         without support functionality marked as deprecated. This requires OpenGL version 3.0 or higher.
@@ -602,6 +601,30 @@ void QSurfaceFormat::setMinorVersion(int minor)
 int QSurfaceFormat::minorVersion() const
 {
     return d->minor;
+}
+
+/*!
+    Returns a QPair<int, int> representing the OpenGL version.
+
+    Useful for version checks, for example format.version() >= qMakePair(3, 2)
+*/
+QPair<int, int> QSurfaceFormat::version() const
+{
+    return qMakePair(d->major, d->minor);
+}
+
+/*!
+    Sets the desired \a major and \a minor OpenGL versions.
+
+    The default version is 2.0.
+*/
+void QSurfaceFormat::setVersion(int major, int minor)
+{
+    if (d->minor != minor || d->major != major) {
+        detach();
+        d->minor = minor;
+        d->major = major;
+    }
 }
 
 /*!

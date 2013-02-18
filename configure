@@ -183,13 +183,25 @@ BEGIN {
         }
         ovalue = ovalue values[var]
     }
-    ovalue = ovalue value
+    value = ovalue value
+
+    ovalue = ""
+    while (match(value, /\$\$system\((.*?)\)/)) {
+        ovalue = ovalue substr(value, 1, RSTART - 1)
+        cmd = substr(value, RSTART + 9, RLENGTH - 10)
+        value = substr(value, RSTART + RLENGTH)
+        while ((cmd | getline line) > 0) {
+            ovalue = ovalue line
+        }
+        close(cmd)
+    }
+    value = ovalue value
 
     combinedValue = values[variable]
     if (append == 1 && length(combinedValue) > 0) {
-        combinedValue = combinedValue " " ovalue
+        combinedValue = combinedValue " " value
     } else {
-        combinedValue = ovalue
+        combinedValue = value
     }
     values[variable] = combinedValue
 }
@@ -2611,20 +2623,6 @@ else
     MAC_SDK_FLAG=
 fi
 
-# find the default framework value
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if [ "$CFG_FRAMEWORK" = "auto" ]; then
-        CFG_FRAMEWORK="$CFG_SHARED"
-    elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
-	echo
-	echo "WARNING: Using static linking will disable the use of Mac frameworks."
-	echo
-        CFG_FRAMEWORK="no"
-    fi
-else
-    CFG_FRAMEWORK=no
-fi
-
 # disable GTK style support auto-detection on Mac
 if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
     CFG_QGTKSTYLE=no
@@ -3674,13 +3672,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
             EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
-	    if [ '!' -z "$CFG_SDK" ]; then
-		echo "SDK_LFLAGS =-Wl,-syslibroot,$CFG_SDK" >>"$mkfile"
-		echo "SDK_CFLAGS =-isysroot $CFG_SDK" >>"$mkfile"
-		EXTRA_CFLAGS="$EXTRA_CFLAGS \$(SDK_CFLAGS)"
-		EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(SDK_CFLAGS)"
-		EXTRA_LFLAGS="$EXTRA_LFLAGS \$(SDK_LFLAGS)"
-            fi
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
@@ -3731,6 +3722,20 @@ if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
 else
     mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
     DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
+fi
+
+#-------------------------------------------------------------------------------
+# Verify makespec
+#-------------------------------------------------------------------------------
+QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" /dev/null 2>&1 >/dev/null`
+if [ $? != "0" ]; then
+    echo "Failed to process makespec for platform '$XPLATFORM'"
+    if [ "$OPT_VERBOSE" = "yes" ]; then
+        echo "$QMAKE_OUTPUT"
+    else
+        echo "Turn on verbose messaging (-v) to see the final report."
+    fi
+    exit 101
 fi
 
 #-------------------------------------------------------------------------------
@@ -3832,7 +3837,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_SDK_FLAG
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST"
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else

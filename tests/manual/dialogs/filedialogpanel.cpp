@@ -228,6 +228,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     gridLayout->addWidget(labelsGroupBox, 1, 0);
     gridLayout->addWidget(buttonsGroupBox, 1, 1);
 
+    enableDeleteModalDialogButton();
     enableDeleteNonModalDialogButton();
     restoreDefaults();
 }
@@ -251,6 +252,7 @@ void FileDialogPanel::showModal()
         m_modalDialog->setWindowTitle(tr("Modal File Dialog #%1 Qt %2")
                                       .arg(++n)
                                       .arg(QLatin1String(QT_VERSION_STR)));
+        enableDeleteModalDialogButton();
     }
     applySettings(m_modalDialog);
     m_modalDialog->show();
@@ -398,7 +400,9 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
     d->setFileMode(comboBoxValue<QFileDialog::FileMode>(m_fileMode));
     d->setOptions(options());
     d->setDefaultSuffix(m_defaultSuffix->text().trimmed());
-    d->setDirectory(m_directory->text().trimmed());
+    const QString directory = m_directory->text().trimmed();
+    if (!directory.isEmpty())
+        d->setDirectory(directory);
     const QString file = m_selectedFileName->text().trimmed();
     if (!file.isEmpty())
        d->selectFile(file);

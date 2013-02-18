@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2013 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1418,6 +1419,86 @@ void tst_QRegularExpression::captureCount()
         QCOMPARE(re.captureCount(), -1);
 }
 
+// the comma in the template breaks QFETCH...
+typedef QMultiHash<QString, int> StringToIntMap;
+Q_DECLARE_METATYPE(StringToIntMap)
+
+void tst_QRegularExpression::captureNames_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<StringToIntMap>("namedCapturesIndexMap");
+    StringToIntMap map;
+
+    QTest::newRow("captureNames01") << "a pattern" << map;
+    QTest::newRow("captureNames02") << "a.*pattern" << map;
+    QTest::newRow("captureNames03") << "(a) pattern" << map;
+    QTest::newRow("captureNames04") << "(a).*(pattern)" << map;
+
+    map.clear();
+    map.replace("named", 1);
+    QTest::newRow("captureNames05") << "a.*(?<named>pattern)" << map;
+
+    map.clear();
+    map.replace("named", 2);
+    QTest::newRow("captureNames06") << "(a).*(?<named>pattern)" << map;
+
+    map.clear();
+    map.replace("name1", 1);
+    map.replace("name2", 2);
+    QTest::newRow("captureNames07") << "(?<name1>a).*(?<name2>pattern)" << map;
+
+    map.clear();
+    map.replace("name1", 2);
+    map.replace("name2", 1);
+    QTest::newRow("captureNames08") << "(?<name2>a).*(?<name1>pattern)" << map;
+
+    map.clear();
+    map.replace("date", 1);
+    map.replace("month", 2);
+    map.replace("year", 3);
+    QTest::newRow("captureNames09") << "^(?<date>\\d\\d)/(?<month>\\d\\d)/(?<year>\\d\\d\\d\\d)$" << map;
+
+    map.clear();
+    map.replace("date", 2);
+    map.replace("month", 1);
+    map.replace("year", 3);
+    QTest::newRow("captureNames10") << "^(?<month>\\d\\d)/(?<date>\\d\\d)/(?<year>\\d\\d\\d\\d)$" << map;
+
+    map.clear();
+    map.replace("noun", 2);
+    QTest::newRow("captureNames11") << "(a)(?|(?<noun>b)|(?<noun>c))(d)" << map;
+
+    map.clear();
+    QTest::newRow("captureNames_invalid01") << "(.*" << map;
+    QTest::newRow("captureNames_invalid02") << "\\" << map;
+    QTest::newRow("captureNames_invalid03") << "(?<noun)" << map;
+    QTest::newRow("captureNames_invalid04") << "(?|(?<noun1>a)|(?<noun2>b))" << map;
+}
+
+void tst_QRegularExpression::captureNames()
+{
+    QFETCH(QString, pattern);
+    QFETCH(StringToIntMap, namedCapturesIndexMap);
+
+    const QRegularExpression re(pattern);
+    QStringList namedCaptureGroups = re.namedCaptureGroups();
+    int namedCaptureGroupsCount = namedCaptureGroups.size();
+
+    QCOMPARE(namedCaptureGroupsCount, re.captureCount() + 1);
+
+    for (int i = 0; i < namedCaptureGroupsCount; ++i) {
+        const QString &name = namedCaptureGroups.at(i);
+
+        if (name.isEmpty()) {
+            QVERIFY(!namedCapturesIndexMap.contains(name));
+        } else {
+            QVERIFY(namedCapturesIndexMap.contains(name));
+            QCOMPARE(i, namedCapturesIndexMap.value(name));
+        }
+    }
+
+}
+
 void tst_QRegularExpression::pcreJitStackUsage_data()
 {
     QTest::addColumn<QString>("pattern");
@@ -1468,4 +1549,36 @@ void tst_QRegularExpression::regularExpressionMatch()
     QCOMPARE(match.captured("").isNull(), true);
     QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatch::captured: empty capturing group name passed");
     QCOMPARE(match.captured(QString()).isNull(), true);
+}
+
+void tst_QRegularExpression::JOptionUsage_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<bool>("isValid");
+    QTest::addColumn<bool>("JOptionUsed");
+
+    QTest::newRow("joption-notused-01") << "a.*b" << true << false;
+    QTest::newRow("joption-notused-02") << "^a(b)(c)$" << true << false;
+    QTest::newRow("joption-notused-03") << "a(b)(?<c>d)|e" << true << false;
+    QTest::newRow("joption-notused-04") << "(?<a>.)(?<a>.)" << false << false;
+
+    QTest::newRow("joption-used-01") << "(?J)a.*b" << true << true;
+    QTest::newRow("joption-used-02") << "(?-J)a.*b" << true << true;
+    QTest::newRow("joption-used-03") << "(?J)(?<a>.)(?<a>.)" << true << true;
+    QTest::newRow("joption-used-04") << "(?-J)(?<a>.)(?<a>.)" << false << true;
+
+}
+
+void tst_QRegularExpression::JOptionUsage()
+{
+    QFETCH(QString, pattern);
+    QFETCH(bool, isValid);
+    QFETCH(bool, JOptionUsed);
+
+    const QString warningMessage = QStringLiteral("QRegularExpressionPrivate::getPatternInfo(): the pattern '%1'\n    is using the (?J) option; duplicate capturing group names are not supported by Qt");
+
+    QRegularExpression re(pattern);
+    if (isValid && JOptionUsed)
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warningMessage.arg(pattern)));
+    QCOMPARE(re.isValid(), isValid);
 }
