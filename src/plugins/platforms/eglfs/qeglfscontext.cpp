@@ -45,6 +45,8 @@
 #include "qeglfshooks.h"
 #include "qeglfsintegration.h"
 
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtGui/QSurface>
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -62,17 +64,22 @@ bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
 
 EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
-    QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-    return window->surface();
+    if (surface->surface()->surfaceClass() == QSurface::Window)
+        return static_cast<QEglFSWindow *>(surface)->surface();
+    else
+        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
 }
 
 void QEglFSContext::swapBuffers(QPlatformSurface *surface)
 {
-    QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-    // draw the cursor
-    if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
-        cursor->paintOnScreen();
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
+        // draw the cursor
+        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
+            cursor->paintOnScreen();
+    }
 
+    hooks->waitForVSync();
     QEGLPlatformContext::swapBuffers(surface);
 }
 

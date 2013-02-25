@@ -138,6 +138,8 @@ public:
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
+    static void handleApplicationStateChanged(Qt::ApplicationState newState);
+
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 
 #ifndef QT_NO_DRAGANDDROP
@@ -189,6 +191,10 @@ public:
 private:
     static bool sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags);
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p);
+#endif
 
 QT_END_NAMESPACE
 

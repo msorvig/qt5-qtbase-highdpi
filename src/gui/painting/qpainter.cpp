@@ -227,7 +227,8 @@ QTransform QPainterPrivate::viewTransform() const
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
 {
-    if (device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
+    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
+    if (device->devType() == QInternal::Printer || device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
         return QTransform();
     const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
     if (deviceScale > 1.0)
@@ -1846,7 +1847,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
 #ifdef Q_OS_MAC
     // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-    const bool isHighDpi = (d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
+    const bool isHighDpi = (pd->devType() == QInternal::Printer || d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
                            false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
 #else
     const bool isHighDpi = false;

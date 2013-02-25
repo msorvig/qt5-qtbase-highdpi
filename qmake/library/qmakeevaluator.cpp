@@ -126,6 +126,7 @@ void QMakeEvaluator::initStatics()
     statics.strforever = QLatin1String("forever");
     statics.strhost_build = QLatin1String("host_build");
     statics.strTEMPLATE = ProKey("TEMPLATE");
+    statics.strQMAKE_PLATFORM = ProKey("QMAKE_PLATFORM");
 #ifdef PROEVALUATOR_FULL
     statics.strREQUIRES = ProKey("REQUIRES");
 #endif
@@ -453,9 +454,9 @@ void QMakeEvaluator::evaluateExpression(
             break; }
         case TokEnvVar: {
             const ProString &var = getStr(tokPtr);
-            const ProStringList &val = split_value_list(m_option->getEnv(var.toQString(m_tmp1)));
-            debugMsg(2, "env var %s => %s", dbgStr(var), dbgStrList(val));
-            addStrList(val, tok, ret, pending, joined);
+            const ProString &val = ProString(m_option->getEnv(var.toQString(m_tmp1)));
+            debugMsg(2, "env var %s => %s", dbgStr(var), dbgStr(val));
+            addStr(val, ret, pending, joined);
             break; }
         case TokFuncName: {
             const ProKey &func = getHashStr(tokPtr);
@@ -924,6 +925,8 @@ void QMakeEvaluator::visitProVariable(
 
     if (varName == statics.strTEMPLATE)
         setTemplate();
+    else if (varName == statics.strQMAKE_PLATFORM)
+        updateFeaturePaths();
 #ifdef PROEVALUATOR_FULL
     else if (varName == statics.strREQUIRES)
         checkRequirements(values(varName));
@@ -1217,7 +1220,6 @@ bool QMakeEvaluator::loadSpec()
     }
     if (!loadSpecInternal())
         return false;
-    updateFeaturePaths(); // The spec extends the feature search path, so rebuild the cache.
     if (!m_conffile.isEmpty()
         && evaluateFile(m_conffile, QMakeHandler::EvalConfigFile, LoadProOnly) != ReturnTrue) {
         return false;

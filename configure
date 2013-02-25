@@ -381,6 +381,12 @@ if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
     PLATFORM_MAC=maybe
 fi
+BUILD_ON_MSYS=no
+HOST_DIRLIST_SEP=":"
+if [ "$OSTYPE" = "msys" ]; then
+    HOST_DIRLIST_SEP=";"
+    BUILD_ON_MSYS=yes
+fi
 
 #-----------------------------------------------------------------------------
 # Qt version detection
@@ -859,7 +865,6 @@ CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_HARFBUZZ=no
-CFG_SDK=
 DEFINES=
 D_FLAGS=
 I_FLAGS=
@@ -1303,7 +1308,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            CFG_SDK="$VAL"
             DeviceVar set QMAKE_MAC_SDK "$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2616,13 +2620,6 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
 fi
 
-# pass on $CFG_SDK to the arch/configure tests.
-if [ -n "$CFG_SDK" ]; then
-    MAC_SDK_FLAG="-sdk $CFG_SDK"
-else
-    MAC_SDK_FLAG=
-fi
-
 # disable GTK style support auto-detection on Mac
 if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
     CFG_QGTKSTYLE=no
@@ -2741,7 +2738,7 @@ fi
 # auto-detect default include and library search paths
 gccout=`$TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
 libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
-DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
+DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
 / \(framework directory\)$/ { next }
@@ -2815,8 +2812,14 @@ if [ -z "$QT_INSTALL_BINS" ]; then #default
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    QT_INSTALL_LIBEXECS_DIRNAME="lib"
+else
+    QT_INSTALL_LIBEXECS_DIRNAME="libexec"
+fi
+
 if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
-    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/libexec" #fallback
+    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/$$QT_INSTALL_LIBEXECS_DIRNAME" #fallback
 fi
 QT_INSTALL_LIBEXECS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBEXECS"`
 
@@ -3038,7 +3041,7 @@ Installation options:
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
     -libexecdir <dir> ..... Program executables will be installed to <dir>
-                            (default ARCHDATADIR/libexec)
+                            (default ARCHDATADIR/$QT_INSTALL_LIBEXECS_DIRNAME)
     -importdir <dir> ...... Imports for QML1 will be installed to <dir>
                             (default ARCHDATADIR/imports)
     -qmldir <dir> ......... Imports for QML2 will be installed to <dir>
@@ -3323,8 +3326,8 @@ Qt/Mac only:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
-    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
-                         To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
+    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
+                         one of the available SDKs as listed by 'xcodebuild -showsdks'.
 
     -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
  *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
@@ -3641,10 +3644,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_CXXFLAGS
         setBootstrapVariable QMAKE_LFLAGS
 
-        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -DQMAKE_OPENSOURCE_EDITION"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQMAKE_OPENSOURCE_EDITION"
-        fi
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
@@ -3663,6 +3662,36 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
+        if [ "$BUILD_ON_MSYS" = "yes" ]; then
+            EXTRA_CFLAGS="-DUNICODE"
+            EXTRA_CXXFLAGS="-DUNICODE"
+            EXTRA_OBJS="qfilesystemengine_win.o \
+                        qfilesystemiterator_win.o \
+                        qfsfileengine_win.o \
+                        qlocale_win.o \
+                        qsettings_win.o \
+                        qsystemlibrary.o \
+                        registry.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/corelib/io/qfilesystemengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
+                        \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
+            EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
+            EXEEXT=".exe"
+        else
+            EXTRA_OBJS="qfilesystemengine_unix.o \
+                        qfilesystemiterator_unix.o \
+                        qfsfileengine_unix.o \
+                        qlocale_unix.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocal_unix.cpp\""
+            EXEEXT=
+        fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "export MACOSX_DEPLOYMENT_TARGET = 10.6" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
@@ -3670,8 +3699,12 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
-            EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
+            EXTRA_OBJS="$EXTRA_OBJS \
+                        qsettings_mac.o \
+                        qcore_mac.o"
+            EXTRA_SRCS="$EXTRA_SRCS \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\""
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
@@ -3684,13 +3717,25 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
 	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
-        sed -e "s,@SOURCE_PATH@,$adjrelpath,g" -e "s,@BUILD_PATH@,$adjoutpath,g" \
-            -e "s,@QMAKE_CFLAGS@,$EXTRA_CFLAGS,g" -e "s,@QMAKE_LFLAGS@,$EXTRA_LFLAGS,g" \
-            -e "s,@QMAKE_CXXFLAGS@,$EXTRA_CXXFLAGS,g" \
-            -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
-            -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
-            -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-            -e "s,@QMAKESPEC@,$adjqmakespec,g" -e "s,@QT_VERSION@,$QT_VERSION,g" "$in_mkfile" >>"$mkfile"
+
+        echo "BUILD_PATH = $adjoutpath" >> "$mkfile"
+        echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
+        echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
+        echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
+        echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
+        echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
+        echo "QTOBJS = $EXTRA_OBJS" >> "$mkfile"
+        echo "QTSRCS = $EXTRA_SRCS" >> "$mkfile"
+        echo "LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
+        echo "QT_INSTALL_BINS = \$(INSTALL_ROOT)$QMAKE_BIN_DIR" >> "$mkfile"
+        echo "QT_INSTALL_DATA = \$(INSTALL_ROOT)$QMAKE_DATA_DIR" >> "$mkfile"
+        echo "EXEEXT = $EXEEXT" >> "$mkfile"
+        echo "RM_F = rm -f" >> "$mkfile"
+        echo "RM_RF = rm -rf" >> "$mkfile"
+        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
+            echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
+        fi
+        cat "$in_mkfile" >> "$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
@@ -3815,7 +3860,7 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_SDK_FLAG "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -3824,7 +3869,7 @@ compileTest()
 
 # Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG" $MAC_SDK_FLAG
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target"
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else
@@ -3837,7 +3882,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST"
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "host"
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
@@ -5350,9 +5395,11 @@ fi
 if [ "$CFG_SHARED" = "yes" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-shared"
     QT_CONFIG="$QT_CONFIG shared"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG shared"
 elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QT_CONFIG="$QT_CONFIG static"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG static"
 fi
 
 #FIXME: qpa is implicit this should all be removed

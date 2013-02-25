@@ -136,6 +136,10 @@
 #define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT      0x0001
 #endif
 
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+
 QT_BEGIN_NAMESPACE
 
 template <class MaskType, class FlagType> inline bool testFlag(MaskType mask, FlagType flag)
@@ -228,6 +232,7 @@ static QSurfaceFormat
                                          QWindowsOpenGLAdditionalFormat *additionalIn = 0)
 {
     QSurfaceFormat format;
+    format.setRenderableType(QSurfaceFormat::OpenGL);
     if (pfd.dwFlags & PFD_DOUBLEBUFFER)
         format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     format.setDepthBufferSize(pfd.cDepthBits);
@@ -496,6 +501,7 @@ static QSurfaceFormat
     enum { attribSize =40 };
 
     QSurfaceFormat result;
+    result.setRenderableType(QSurfaceFormat::OpenGL);
     if (!staticContext.hasExtensions())
         return result;
     int iAttributes[attribSize];
@@ -696,34 +702,27 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.version = (version.mid(0, majorDot).toInt() << 8)
             + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
     }
+    result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
-        result.profile = QSurfaceFormat::NoProfile;
         result.options |= QSurfaceFormat::DeprecatedFunctions;
         return result;
     }
     // v3 onwards
     GLint value = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         result.options |= QSurfaceFormat::DeprecatedFunctions;
-    if (value & WGL_CONTEXT_DEBUG_BIT_ARB)
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         result.options |= QSurfaceFormat::DebugContext;
     if (result.version < 0x0302)
         return result;
     // v3.2 onwards: Profiles
     value = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-    switch (value) {
-    case WGL_CONTEXT_CORE_PROFILE_BIT_ARB:
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
         result.profile = QSurfaceFormat::CoreProfile;
-        break;
-    case WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         result.profile = QSurfaceFormat::CompatibilityProfile;
-        break;
-    default:
-        result.profile = QSurfaceFormat::NoProfile;
-        break;
-    }
     return result;
 }
 
@@ -878,6 +877,12 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     m_renderingContext(0),
     m_pixelFormat(0), m_extensionsUsed(false)
 {
+    QSurfaceFormat format = context->format();
+    if (format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        format.setRenderableType(QSurfaceFormat::OpenGL);
+    if (format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
+
     // workaround for matrox driver:
     // make a cheap call to opengl to force loading of DLL
     static bool opengl32dll = false;
@@ -915,7 +920,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         QWindowsOpenGLAdditionalFormat obtainedAdditional;
         if (tryExtensions) {
             m_pixelFormat =
-                ARB::choosePixelFormat(hdc, *m_staticContext, context->format(),
+                ARB::choosePixelFormat(hdc, *m_staticContext, format,
                                        requestedAdditional, &m_obtainedPixelFormatDescriptor);
             if (m_pixelFormat > 0) {
                 m_obtainedFormat =
@@ -925,7 +930,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
             }
         } // tryExtensions
         if (!m_pixelFormat) { // Failed, try GDI
-            m_pixelFormat = GDI::choosePixelFormat(hdc, context->format(), requestedAdditional,
+            m_pixelFormat = GDI::choosePixelFormat(hdc, format, requestedAdditional,
                                                    &m_obtainedPixelFormatDescriptor);
             if (m_pixelFormat)
                 m_obtainedFormat =
@@ -948,7 +953,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         if (m_extensionsUsed)
             m_renderingContext =
                 ARB::createContext(*m_staticContext, hdc,
-                                   context->format(),
+                                   format,
                                    requestedAdditional,
                                    sharingRenderingContext);
         if (!m_renderingContext)

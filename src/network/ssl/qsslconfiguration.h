@@ -99,6 +99,9 @@ public:
     void setPeerVerifyDepth(int depth);
 
     // Certificate & cipher configuration
+    QList<QSslCertificate> localCertificateChain() const;
+    void setLocalCertificateChain(const QList<QSslCertificate> &localChain);
+
     QSslCertificate localCertificate() const;
     void setLocalCertificate(const QSslCertificate &certificate);
 

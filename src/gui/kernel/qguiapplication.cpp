@@ -60,7 +60,9 @@
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
 #include <QtDebug>
+#ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
+#endif
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
@@ -108,6 +110,8 @@ QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 bool QGuiApplicationPrivate::tabletState = false;
 QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
 QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
+
+Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
@@ -1272,6 +1276,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::WindowStateChanged:
         QGuiApplicationPrivate::processWindowStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowStateChangedEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::ApplicationStateChanged:
+            QGuiApplicationPrivate::processApplicationStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Close:
         QGuiApplicationPrivate::processCloseEvent(
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
@@ -1565,7 +1572,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
                             qApp, SLOT(_q_updateFocusObject(QObject*)));
-    } else {
+    } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
@@ -1575,7 +1582,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
                          qApp, SLOT(_q_updateFocusObject(QObject*)));
-    } else {
+    } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
@@ -1596,6 +1603,24 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
         QWindowStateChangeEvent e(window->windowState());
         window->d_func()->windowState = wse->newState;
         QGuiApplication::sendSpontaneousEvent(window, &e);
+    }
+}
+
+void QGuiApplicationPrivate::processApplicationStateChangedEvent(QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e)
+{
+    if (e->newState == applicationState)
+        return;
+    applicationState = e->newState;
+
+    switch (e->newState) {
+    case Qt::ApplicationActive: {
+        QEvent appActivate(QEvent::ApplicationActivate);
+        qApp->sendSpontaneousEvent(qApp, &appActivate);
+        break; }
+    case Qt::ApplicationInactive: {
+        QEvent appDeactivate(QEvent::ApplicationDeactivate);
+        qApp->sendSpontaneousEvent(qApp, &appDeactivate);
+        break; }
     }
 }
 
