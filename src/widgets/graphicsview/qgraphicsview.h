@@ -146,6 +146,7 @@ public:
 #ifndef QT_NO_RUBBERBAND
     Qt::ItemSelectionMode rubberBandSelectionMode() const;
     void setRubberBandSelectionMode(Qt::ItemSelectionMode mode);
+    QRect rubberBandRect() const;
 #endif
 
     CacheMode cacheMode() const;
@@ -225,6 +226,11 @@ public Q_SLOTS:
     void updateScene(const QList<QRectF> &rects);
     void invalidateScene(const QRectF &rect = QRectF(), QGraphicsScene::SceneLayers layers = QGraphicsScene::AllLayers);
     void updateSceneRect(const QRectF &rect);
+
+#ifndef QT_NO_RUBBERBAND
+Q_SIGNALS:
+    void rubberBandChanged(QRect viewportRect, QPointF fromScenePoint, QPointF toScenePoint);
+#endif
 
 protected Q_SLOTS:
     void setupViewport(QWidget *widget);

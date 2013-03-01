@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Intel Corporation.
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -751,7 +752,7 @@ QMakeVar add styles "mac fusion windows"
 unset QTDIR
 
 # the minimum version of libdbus-1 that we require:
-MIN_DBUS_1_VERSION=0.93
+MIN_DBUS_1_VERSION=1.2
 
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
@@ -893,6 +894,7 @@ CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
+CFG_WERROR=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2138,6 +2140,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    warnings-are-errors|Werror)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_WERROR="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2512,6 +2521,7 @@ fi
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
 case "$XPLATFORM" in *-maemo*) XPLATFORM_MAEMO=yes;; esac
 case "$XPLATFORM" in *qnx-*|*blackberry-*) XPLATFORM_QNX=yes;; esac
+case "$XPLATFORM" in *ios*) XPLATFORM_IOS=yes;; esac
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -2618,6 +2628,11 @@ fi
 
 if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
+fi
+
+# iOS builds should be static to be able to submit to the App Store
+if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_SHARED="no"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -3289,6 +3304,10 @@ Additional options:
 
  *  -no-system-proxies .. Do not use system network proxies by default.
     -system-proxies ..... Use system network proxies by default.
+
+    -no-warnings-are-errors Make warnings be treated normally
+    -warnings-are-errors  Make warnings be treated as errors
+                          (enabled if -developer-build is active)
 
  $GBN  -no-glib ........... Do not compile Glib support.
  $GBY  -glib .............. Compile Glib support.
@@ -4026,7 +4045,8 @@ fi
 
 # detect neon support
 if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
-    if compileTest unix/neon "neon"; then
+    # The iOS toolchain has trouble building the pixman NEON draw-helpers
+    if [ "$XPLATFORM_IOS" != "yes" ] && compileTest unix/neon "neon"; then
 	CFG_NEON=yes
     else
 	CFG_NEON=no
@@ -6091,6 +6111,11 @@ else
 fi
 if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
+    if [ "$CFG_WERROR" != "no" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
+    fi
+elif [ "$CFG_WERROR" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
 fi
 
 cat >>"$QTCONFIG.tmp" <<EOF

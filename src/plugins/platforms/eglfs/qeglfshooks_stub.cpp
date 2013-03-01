@@ -62,8 +62,6 @@ const char *QEglFSHooks::fbDeviceName() const
 
 void QEglFSHooks::platformInit()
 {
-    Q_UNUSED(hooks);
-
     framebuffer = qt_safe_open(fbDeviceName(), O_RDONLY);
 
     if (framebuffer == -1)
@@ -248,12 +246,14 @@ QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
 
 void QEglFSHooks::waitForVSync() const
 {
+#if defined(FBIO_WAITFORVSYNC)
     static const bool forceSync = qgetenv("QT_QPA_EGLFS_FORCEVSYNC").toInt();
     if (forceSync && framebuffer != -1) {
         int arg = 0;
         if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)
             qWarning("Could not wait for vsync.");
     }
+#endif
 }
 
 #ifndef EGLFS_PLATFORM_HOOKS

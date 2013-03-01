@@ -256,6 +256,20 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     \sa dragMode, QGraphicsScene::setSelectionArea()
 */
 
+/*!
+    \since 5.1
+
+    \fn void QGraphicsView::rubberBandChanged(QRect rubberBandRect, QPointF fromScenePoint, QPointF toScenePoint)
+
+    This signal is emitted when the rubber band rect is changed. The viewport Rect is specified by \a rubberBandRect.
+    The drag start position and drag end position are provided in scene points with \a fromScenePoint and \a toScenePoint.
+
+    When rubberband selection ends this signal will be emitted with null vales.
+
+    \sa rubberBandRect()
+*/
+
+
 #include "qgraphicsview.h"
 #include "qgraphicsview_p.h"
 
@@ -727,15 +741,26 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     // if we didn't get the release events).
     if (!event->buttons()) {
         rubberBanding = false;
-        rubberBandRect = QRect();
+        if (!rubberBandRect.isNull()) {
+            rubberBandRect = QRect();
+            emit q->rubberBandChanged(rubberBandRect, QPointF(), QPointF());
+        }
         return;
     }
+
+    QRect oldRubberband = rubberBandRect;
 
     // Update rubberband position
     const QPoint mp = q->mapFromScene(mousePressScenePoint);
     const QPoint ep = event->pos();
     rubberBandRect = QRect(qMin(mp.x(), ep.x()), qMin(mp.y(), ep.y()),
                            qAbs(mp.x() - ep.x()) + 1, qAbs(mp.y() - ep.y()) + 1);
+
+    if (rubberBandRect != oldRubberband || lastRubberbandScenePoint != lastMouseMoveScenePoint) {
+        lastRubberbandScenePoint = lastMouseMoveScenePoint;
+        oldRubberband = rubberBandRect;
+        emit q->rubberBandChanged(rubberBandRect, mousePressScenePoint, lastRubberbandScenePoint);
+    }
 
     // Update new rubberband
     if (viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
@@ -1496,7 +1521,7 @@ void QGraphicsView::setDragMode(DragMode mode)
     The default value is Qt::IntersectsItemShape; all items whose shape
     intersects with or is contained by the rubber band are selected.
 
-    \sa dragMode, items()
+    \sa dragMode, items(), rubberBandRect()
 */
 Qt::ItemSelectionMode QGraphicsView::rubberBandSelectionMode() const
 {
@@ -1507,6 +1532,27 @@ void QGraphicsView::setRubberBandSelectionMode(Qt::ItemSelectionMode mode)
 {
     Q_D(QGraphicsView);
     d->rubberBandSelectionMode = mode;
+}
+
+/*!
+   \since 5.1
+   This functions returns the current rubber band area (in viewport coordinates) if the user
+   is currently doing an itemselection with rubber band. When the user is not using the
+   rubber band this functions returns (a null) QRectF().
+
+   Notice that part of this QRect can be outise the visual viewport. It can e.g
+   contain negative values.
+
+   \sa rubberBandSelectionMode, rubberBandChanged()
+*/
+
+QRect QGraphicsView::rubberBandRect() const
+{
+    Q_D(const QGraphicsView);
+    if (d->dragMode != QGraphicsView::RubberBandDrag || !d->sceneInteractionAllowed || !d->rubberBanding)
+        return QRect();
+
+    return d->rubberBandRect;
 }
 #endif
 
@@ -3295,7 +3341,10 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
                     d->updateAll();
             }
             d->rubberBanding = false;
-            d->rubberBandRect = QRect();
+            if (!d->rubberBandRect.isNull()) {
+                d->rubberBandRect = QRect();
+                emit rubberBandChanged(d->rubberBandRect, QPointF(), QPointF());
+            }
         }
     } else
 #endif
