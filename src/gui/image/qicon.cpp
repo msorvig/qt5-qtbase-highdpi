@@ -122,8 +122,7 @@ static void qt_cleanup_icon_cache()
 static qreal qEffectiveDevicePixelRatio(QWindow *window = 0)
 {
     qreal devicePixelRatio = 1.0;
-    bool enableHighdpi = (!qgetenv("QT_HIGHDPI_AWARE").isEmpty() || !qgetenv("QT_EMULATED_HIGHDPI").isEmpty());
-    if (enableHighdpi) {
+    if (qApp->testAttribute(Qt::AA_UseHighDpiImages)) {
         devicePixelRatio = window ? window->devicePixelRatio() : qApp->devicePixelRatio(); // Don't know which window to target.
     }
     return devicePixelRatio;

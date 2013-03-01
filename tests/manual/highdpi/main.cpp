@@ -361,7 +361,7 @@ public:
         int maxSize = 120;
         int sizeIncrement = 20;
 
-        qputenv("QT_HIGHDPI_AWARE", ""); // disable generation of high-dpi pixmaps from QIcon.
+        qApp->setAttribute(Qt::AA_UseHighDpiImages, false);
 
         // normal icon
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
@@ -386,7 +386,7 @@ public:
         x = 10;
         y+=dy;
 
-        qputenv("QT_HIGHDPI_AWARE", "1"); // enable generation of high-dpi pixmaps from QIcon.
+        qApp->setAttribute(Qt::AA_UseHighDpiImages, true); // enable generation of high-dpi pixmaps from QIcon.
 
         // normal icon
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
@@ -449,8 +449,8 @@ public:
 
 int main(int argc, char **argv)
 {
-    qputenv("QT_HIGHDPI_AWARE", "1");
     QApplication app(argc, argv);
+    qApp->setAttribute(Qt::AA_UseHighDpiImages);
 
     PixmapPainter pixmapPainter;
 
