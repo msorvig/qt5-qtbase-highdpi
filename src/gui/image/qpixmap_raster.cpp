@@ -239,12 +239,15 @@ QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
         return image;
 
     QRect clipped = rect.intersected(QRect(0, 0, w, h));
-    if (d % 8 == 0)
-        return QImage(image.scanLine(clipped.y()) + clipped.x() * (d / 8),
-                      clipped.width(), clipped.height(),
-                      image.bytesPerLine(), image.format());
-    else
+    if (d % 8 == 0) {
+        QImage newImage(image.scanLine(clipped.y()) + clipped.x() * (d / 8),
+                        clipped.width(), clipped.height(),
+                        image.bytesPerLine(), image.format());
+        newImage.setDevicePixelRatio(image.devicePixelRatio());
+        return newImage;
+    } else {
         return image.copy(clipped);
+    }
 }
 
 QPaintEngine* QRasterPlatformPixmap::paintEngine() const
