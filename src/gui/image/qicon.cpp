@@ -134,7 +134,8 @@ static qreal qt_effective_device_pixel_ratio(QWindow *window = 0)
     if (window)
         return window->devicePixelRatio();
 
-    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps)) {
+    bool environmentEnable = !qgetenv("QT_USE_HIGHDPI_PIXMAPS").isEmpty();
+    if (environmentEnable || qApp->testAttribute(Qt::AA_UseHighDpiPixmaps)) {
         return qApp->devicePixelRatio(); // Don't know which window to target.
     }
 
