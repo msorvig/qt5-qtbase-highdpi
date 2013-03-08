@@ -222,7 +222,6 @@ void QXcbConnection::updateScreens()
     // Delete any existing screens which are not in activeScreens
     for (int i = m_screens.count() - 1; i >= 0; --i) {
         if (!activeScreens.contains(m_screens[i])) {
-            ((QXcbIntegration*)QGuiApplicationPrivate::platformIntegration())->removeDefaultOpenGLContextInfo(m_screens[i]);
             delete m_screens[i];
             m_screens.removeAt(i);
         }
@@ -1067,7 +1066,7 @@ void QXcbConnection::processXcbEvents()
             while (it != m_peekFuncs.end()) {
                 // These callbacks return true if the event is what they were
                 // waiting for, remove them from the list in that case.
-                if ((*it)(event))
+                if ((*it)(this, event))
                     it = m_peekFuncs.erase(it);
                 else
                     ++it;
@@ -1087,7 +1086,7 @@ void QXcbConnection::processXcbEvents()
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
     Q_FOREACH (PeekFunc f, m_peekFuncs)
-        f(0);
+        f(this, 0);
     m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());

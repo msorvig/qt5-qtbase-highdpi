@@ -284,6 +284,7 @@ public:
         SplashScreen = ToolTip | Dialog,
         Desktop = 0x00000010 | Window,
         SubWindow = 0x00000012,
+        ForeignWindow = 0x00000020 | Window,
 
         WindowType_Mask = 0x000000ff,
         MSWindowsFixedSizeDialogHint = 0x00000100,
@@ -326,8 +327,10 @@ public:
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
     enum ApplicationState {
-        ApplicationInactive  = 0x00000000,
-        ApplicationActive    = 0x00000001
+        ApplicationSuspended    = 0x00000000,
+        ApplicationHidden       = 0x00000001,
+        ApplicationInactive     = 0x00000002,
+        ApplicationActive       = 0x00000004
     };
 
     Q_DECLARE_FLAGS(ApplicationStates, ApplicationState)

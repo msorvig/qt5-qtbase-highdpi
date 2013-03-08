@@ -156,7 +156,8 @@ QQnxWindow::~QQnxWindow()
 
     // Remove from parent's Hierarchy.
     removeFromParent();
-    m_screen->updateHierarchy();
+    if (m_screen)
+        m_screen->updateHierarchy();
 
     // Cleanup QNX window and its buffers
     screen_destroy_window(m_window);
@@ -272,9 +273,9 @@ void QQnxWindow::setVisible(bool visible)
     window()->requestActivate();
 
     if (window()->isTopLevel()) {
-        if (visible) {
-            QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
-        } else {
+        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+
+        if (!visible) {
             // Flush the context, otherwise it won't disappear immediately
             screen_flush_context(m_screenContext, 0);
         }
@@ -497,6 +498,11 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "platformScreen =" << platformScreen;
 
+    if (platformScreen == 0) { // The screen has been destroyed
+        m_screen = 0;
+        return;
+    }
+
     if (m_screen == platformScreen)
         return;
 
@@ -539,7 +545,7 @@ void QQnxWindow::removeFromParent()
             m_parentWindow = 0;
         else
             qFatal("QQnxWindow: Window Hierarchy broken; window has parent, but parent hasn't got child.");
-    } else {
+    } else if (m_screen) {
         m_screen->removeWindow(this);
     }
 }

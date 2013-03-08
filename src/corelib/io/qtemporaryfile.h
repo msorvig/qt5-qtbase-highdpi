@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_TEMPORARYFILE
 
 class QTemporaryFilePrivate;
+class QLockFilePrivate;
 
 class Q_CORE_EXPORT QTemporaryFile : public QFile
 {
@@ -96,6 +97,7 @@ protected:
 
 private:
     friend class QFile;
+    friend class QLockFilePrivate;
     Q_DISABLE_COPY(QTemporaryFile)
 };
 

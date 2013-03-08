@@ -5430,7 +5430,7 @@ void tst_QWidget::setToolTip()
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
         popup->setObjectName(QString::fromLatin1("tst_qwidget setToolTip #%1").arg(pass));
         popup->setWindowTitle(popup->objectName());
-        popup->resize(150, 50);
+        popup->setGeometry(50, 50, 150, 50);
         QFrame *frame = new QFrame(popup.data());
         frame->setGeometry(0, 0, 50, 50);
         frame->setFrameStyle(QFrame::Box | QFrame::Plain);
@@ -5626,6 +5626,7 @@ void tst_QWidget::showHideShowX11()
     qApp->installNativeEventFilter(&w);
 
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     w.hide();
 
     QEventLoop eventLoop;

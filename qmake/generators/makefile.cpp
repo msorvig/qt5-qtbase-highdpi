@@ -305,8 +305,8 @@ MakefileGenerator::setProjectFile(QMakeProject *p)
     project = p;
     if (project->isActiveConfig("win32"))
         target_mode = TARG_WIN_MODE;
-    else if (project->isActiveConfig("macx"))
-        target_mode = TARG_MACX_MODE;
+    else if (project->isActiveConfig("mac"))
+        target_mode = TARG_MAC_MODE;
     else
         target_mode = TARG_UNIX_MODE;
     init();
@@ -447,6 +447,9 @@ MakefileGenerator::init()
     chkglue = v["QMAKE_CHK_EXISTS_GLUE"].join(' ');
     if (chkglue.isEmpty()) // Backwards compat with Qt4 specs
         chkglue = isWindowsShell() ? "" : "|| ";
+
+    if (v["QMAKE_LINK_O_FLAG"].isEmpty())
+        v["QMAKE_LINK_O_FLAG"].append("-o ");
 
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
@@ -3158,11 +3161,8 @@ MakefileGenerator::pkgConfigFixPath(QString path) const
 void
 MakefileGenerator::writePkgConfigFile()
 {
-    QString fname = pkgConfigFileName(), lname = fname;
+    QString fname = pkgConfigFileName();
     mkdir(fileInfo(fname).path());
-    int slsh = lname.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        lname = lname.right(lname.length() - slsh - 1);
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
@@ -3236,7 +3236,7 @@ MakefileGenerator::writePkgConfigFile()
     t << "Libs: ";
     QString pkgConfiglibDir;
     QString pkgConfiglibName;
-    if (target_mode == TARG_MACX_MODE && project->isActiveConfig("lib_bundle")) {
+    if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
         pkgConfiglibDir = "-F${libdir}";
         ProString bundle;
         if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
@@ -3249,7 +3249,7 @@ MakefileGenerator::writePkgConfigFile()
         pkgConfiglibName = "-framework " + bundle + " ";
     } else {
         pkgConfiglibDir = "-L${libdir}";
-        pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
+        pkgConfiglibName = "-l" + fileInfo(fname).completeBaseName();
         if (project->isActiveConfig("shared"))
             pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
     }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -547,7 +548,7 @@ private slots:
     void returnRefs();
     void memberProperties_data();
     void memberProperties();
-
+    void memberProperties2();
     void privateSignalConnection();
     void finalClasses_data();
     void finalClasses();
@@ -1893,6 +1894,23 @@ void tst_Moc::memberProperties()
     }
 }
 
+//this used to fail to compile
+class ClassWithOneMember  : public QObject {
+    Q_PROPERTY(int member MEMBER member)
+    Q_OBJECT
+public:
+    int member;
+};
+
+void tst_Moc::memberProperties2()
+{
+    ClassWithOneMember o;
+    o.member = 442;
+    QCOMPARE(o.property("member").toInt(), 442);
+    QVERIFY(o.setProperty("member", 6666));
+    QCOMPARE(o.member, 6666);
+}
+
 class SignalConnectionTester : public QObject
 {
     Q_OBJECT
@@ -2918,7 +2936,6 @@ void tst_Moc::parseDefines()
         }
         if (!qstrcmp(mci.name(), "TestString2")) {
             ++count;
-            qDebug() << mci.value();
             QVERIFY(!qstrcmp(mci.value(), "ParseDefine"));
         }
         if (!qstrcmp(mci.name(), "TestString3")) {
@@ -2927,6 +2944,9 @@ void tst_Moc::parseDefines()
         }
     }
     QVERIFY(count == 3);
+
+    index = mo->indexOfSlot("PD_DEFINE_ITSELF_SUFFIX(int)");
+    QVERIFY(index != -1);
 }
 
 void tst_Moc::preprocessorOnly()

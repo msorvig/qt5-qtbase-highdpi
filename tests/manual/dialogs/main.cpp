@@ -42,6 +42,7 @@
 #include "filedialogpanel.h"
 #include "colordialogpanel.h"
 #include "fontdialogpanel.h"
+#include "wizardpanel.h"
 
 #include <QMainWindow>
 #include <QApplication>
@@ -71,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
     tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
     tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
+    tabWidget->addTab(new WizardPanel, tr("QWizard"));
     setCentralWidget(tabWidget);
 }
 

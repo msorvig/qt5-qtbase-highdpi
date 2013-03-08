@@ -14,6 +14,7 @@ SUBDIRS=\
     qfilesystemwatcher \
     qiodevice \
     qipaddress \
+    qlockfile \
     qnodebug \
     qprocess \
     qprocess-noapplication \
@@ -40,7 +41,6 @@ SUBDIRS=\
     qiodevice \
     qprocess \
     qtextstream
-}
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qabstractfileengine \

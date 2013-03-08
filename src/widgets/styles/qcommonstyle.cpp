@@ -2270,11 +2270,11 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             case QFrame::VLine: {
                 QPoint p1, p2;
                 if (frameShape == QFrame::HLine) {
-                    p1 = QPoint(opt->rect.x(), opt->rect.height() / 2);
+                    p1 = QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height() / 2);
                     p2 = QPoint(opt->rect.x() + opt->rect.width(), p1.y());
                 } else {
-                    p1 = QPoint(opt->rect.x()+opt->rect.width() / 2, 0);
-                    p2 = QPoint(p1.x(), opt->rect.height());
+                    p1 = QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
+                    p2 = QPoint(p1.x(), p1.y() + opt->rect.height());
                 }
                 if (frameShadow == QFrame::Plain) {
                     QPen oldPen = p->pen();
@@ -5105,7 +5105,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toInt();
         break;
     case SH_RequestSoftwareInputPanel:
+#ifdef Q_OS_ANDROID
+        ret = RSIP_OnMouseClick;
+#else
         ret = RSIP_OnMouseClickAndAlreadyFocused;
+#endif
         break;
     case SH_ScrollBar_Transient:
         ret = false;

@@ -59,6 +59,11 @@
 
 #include <QDebug>
 
+enum {
+    defaultWindowWidth = 160,
+    defaultWindowHeight = 160
+};
+
 static bool isMouseEvent(NSEvent *ev)
 {
     switch ([ev type]) {
@@ -188,6 +193,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, const QCocoaIntegration *platformIntegr
     : QPlatformWindow(tlw)
     , m_platformIntegration(platformIntegration)
     , m_nsWindow(0)
+    , m_contentViewIsEmbedded(false)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
@@ -202,7 +208,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, const QCocoaIntegration *platformIntegr
 #endif
     QCocoaAutoReleasePool pool;
 
-    m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+    m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+    m_contentView = m_qtView;
     setGeometry(tlw->geometry());
 
     recreateWindow(parent());
@@ -239,6 +246,10 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
     QCocoaAutoReleasePool pool;
+
+    if (m_contentViewIsEmbedded)
+        return;
+
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
         [m_nsWindow setContentSize : bounds.size];
@@ -540,7 +551,7 @@ void QCocoaWindow::setMask(const QRegion &region)
     if (m_nsWindow)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
 
-    [m_contentView setMaskRegion:&region];
+    [m_qtView setMaskRegion:&region];
     updateOpaque();
 }
 
@@ -585,6 +596,19 @@ NSView *QCocoaWindow::contentView() const
     return m_contentView;
 }
 
+void QCocoaWindow::setContentView(NSView *contentView)
+{
+    // Remove and release the previous content view
+    [m_contentView removeFromSuperview];
+    [m_contentView release];
+
+    // Insert and retain the new content view
+    [contentView retain];
+    m_contentView = contentView;
+    m_qtView = 0; // The new content view is not a QNSView.
+    recreateWindow(parent()); // Adds the content view to parent NSView
+}
+
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
@@ -597,7 +621,7 @@ void QCocoaWindow::windowWillMove()
 
 void QCocoaWindow::windowDidMove()
 {
-    [m_contentView updateGeometry];
+    [m_qtView updateGeometry];
 }
 
 void QCocoaWindow::windowDidResize()
@@ -605,7 +629,7 @@ void QCocoaWindow::windowDidResize()
     if (!m_nsWindow)
         return;
 
-    [m_contentView updateGeometry];
+    [m_qtView updateGeometry];
 }
 
 void QCocoaWindow::windowWillClose()
@@ -646,7 +670,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         m_nsWindowDelegate = 0;
     }
 
-    if (!parentWindow) {
+    if (window()->type() == Qt::SubWindow) {
+        // Subwindows don't have a NSWindow.
+    } else if (!parentWindow) {
         // Create a new NSWindow if this is a top-level window.
         m_nsWindow = createNSWindow();
         setNSWindow(m_nsWindow);
@@ -682,7 +708,8 @@ void QCocoaWindow::requestActivateWindow()
 NSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;
-    NSRect frame = qt_mac_flipRect(qhidpiPointToPixel(window()->geometry()), window());
+    QRect rect = initialGeometry(window(), qhidpiPointToPixel(window()->geometry()), defaultWindowWidth, defaultWindowHeight);
+    NSRect frame = qt_mac_flipRect(rect, window());
 
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
@@ -753,7 +780,6 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
 {
     m_nsWindowDelegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
     [window setDelegate:m_nsWindowDelegate];
-    [window setAcceptsMouseMovedEvents:YES];
 
     // Prevent Cocoa from releasing the window on close. Qt
     // handles the close event asynchronously and we want to

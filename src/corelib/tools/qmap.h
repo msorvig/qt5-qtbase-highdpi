@@ -538,7 +538,9 @@ public:
     iterator upperBound(const Key &key);
     const_iterator upperBound(const Key &key) const;
     iterator insert(const Key &key, const T &value);
+    iterator insert(const_iterator pos, const Key &key, const T &value);
     iterator insertMulti(const Key &key, const T &value);
+    iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
     QMap<Key, T> &unite(const QMap<Key, T> &other);
 
     // STL compatibility
@@ -663,6 +665,72 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insert(const Key
 }
 
 template <class Key, class T>
+typename QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const Key &akey, const T &avalue)
+{
+    if (d->ref.isShared())
+        return this->insert(akey, avalue);
+
+    if (pos == constEnd()) {
+        // Hint is that the Node is larger than (or equal to) the largest value.
+        Node *n = static_cast<Node *>(pos.i->left);
+        if (n) {
+            while (n->right)
+                n = static_cast<Node *>(n->right);
+
+            if (!qMapLessThanKey(n->key, akey))
+                return this->insert(akey, avalue); // ignore hint
+            // This can be optimized by checking equal too.
+            // we can overwrite if previous node key is strictly smaller
+            // (or there is no previous node)
+
+            Node *z = d->createNode(akey, avalue, n, false); // insert right most
+            return iterator(z);
+        }
+        return this->insert(akey, avalue);
+    } else {
+        // Hint indicates that the node should be less (or equal to) the hint given
+        // but larger than the previous value.
+        Node *next = const_cast<Node*>(pos.i);
+        if (qMapLessThanKey(next->key, akey))
+            return this->insert(akey, avalue); // ignore hint
+
+        if (pos == constBegin()) {
+            // There is no previous value
+            // Maybe overwrite left most value
+            if (!qMapLessThanKey(akey, next->key)) {
+                next->value = avalue; // overwrite current iterator
+                return iterator(next);
+            }
+            // insert left most.
+            Node *z = d->createNode(akey, avalue, begin().i, true);
+            return iterator(z);
+        } else {
+            Node *prev = const_cast<Node*>(pos.i->previousNode());
+            if (!qMapLessThanKey(prev->key, akey)) {
+                return this->insert(akey, avalue); // ignore hint
+            }
+            // Hint is ok
+            if (!qMapLessThanKey(akey, next->key)) {
+                next->value = avalue; // overwrite current iterator
+                return iterator(next);
+            }
+
+            // we need to insert (not overwrite)
+            if (prev->right == 0) {
+                Node *z = d->createNode(akey, avalue, prev, false);
+                return iterator(z);
+            }
+            if (next->left == 0) {
+                Node *z = d->createNode(akey, avalue, next, true);
+                return iterator(z);
+            }
+            Q_ASSERT(false); // We should have prev->right == 0 or next->left == 0.
+            return this->insert(akey, avalue);
+        }
+    }
+}
+
+template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &akey,
                                                                             const T &avalue)
 {
@@ -678,6 +746,57 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(cons
     Node *z = d->createNode(akey, avalue, y, left);
     return iterator(z);
 }
+
+template <class Key, class T>
+typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &akey, const T &avalue)
+{
+    if (d->ref.isShared())
+        return this->insertMulti(akey, avalue);
+
+    if (pos == constEnd()) {
+        // Hint is that the Node is larger than (or equal to) the largest value.
+        Node *n = static_cast<Node *>(pos.i->left);
+        if (n) {
+            while (n->right)
+                n = static_cast<Node *>(n->right);
+
+            if (!qMapLessThanKey(n->key, akey))
+                return this->insertMulti(akey, avalue); // ignore hint
+            Node *z = d->createNode(akey, avalue, n, false); // insert right most
+            return iterator(z);
+        }
+        return this->insertMulti(akey, avalue);
+    } else {
+        // Hint indicates that the node should be less (or equal to) the hint given
+        // but larger than the previous value.
+        Node *next = const_cast<Node*>(pos.i);
+        if (qMapLessThanKey(next->key, akey))
+            return this->insertMulti(akey, avalue); // ignore hint
+
+        if (pos == constBegin()) {
+            // There is no previous value (insert left most)
+            Node *z = d->createNode(akey, avalue, begin().i, true);
+            return iterator(z);
+        } else {
+            Node *prev = const_cast<Node*>(pos.i->previousNode());
+            if (!qMapLessThanKey(prev->key, akey))
+                return this->insertMulti(akey, avalue); // ignore hint
+
+            // Hint is ok - do insert
+            if (prev->right == 0) {
+                Node *z = d->createNode(akey, avalue, prev, false);
+                return iterator(z);
+            }
+            if (next->left == 0) {
+                Node *z = d->createNode(akey, avalue, next, true);
+                return iterator(z);
+            }
+            Q_ASSERT(false); // We should have prev->right == 0 or next->left == 0.
+            return this->insertMulti(akey, avalue);
+        }
+    }
+}
+
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator QMap<Key, T>::constFind(const Key &akey) const
@@ -984,6 +1103,8 @@ public:
     { return QMap<Key, T>::insert(key, value); }
     inline typename QMap<Key, T>::iterator insert(const Key &key, const T &value)
     { return QMap<Key, T>::insertMulti(key, value); }
+    inline typename QMap<Key, T>::iterator insert(typename QMap<Key, T>::const_iterator pos, const Key &key, const T &value)
+    { return QMap<Key, T>::insertMulti(pos, key, value); }
 
     inline QMultiMap &operator+=(const QMultiMap &other)
     { this->unite(other); return *this; }

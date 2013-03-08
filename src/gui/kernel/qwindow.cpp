@@ -130,6 +130,18 @@ QT_BEGIN_NAMESPACE
     and can keep rendering until it isExposed() returns false. To find out when
     isExposed() changes, reimplement exposeEvent(). The window will always get
     a resize event before the first expose event.
+
+    \section1 Initial geometry
+
+    If the window's width and height are left uninitialized, the window will
+    get a reasonable default geometry from the platform window. If the position
+    is left uninitialized, then the platform window will allow the windowing
+    system to position the window. For example on X11, the window manager
+    usually does some kind of smart positioning to try to avoid having new
+    windows completely obscure existing windows. However setGeometry()
+    initializes both the position and the size, so if you want a fixed size but
+    an automatic position, you should call resize() or setWidth() and
+    setHeight() instead.
 */
 
 /*!
@@ -463,6 +475,10 @@ void QWindow::create()
 WId QWindow::winId() const
 {
     Q_D(const QWindow);
+
+    if (type() == Qt::ForeignWindow)
+        return WId(property("_q_foreignWinId").value<WId>());
+
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
 
@@ -488,8 +504,11 @@ QWindow *QWindow::parent() const
     the clip of the window, so it will be clipped to the \a parent window.
 
     Setting \a parent to be 0 will make the window become a top level window.
-*/
 
+    If \a parent is a window created by fromWinId(), then the current window
+    will be embedded inside \a parent, if the platform supports it. Window
+    embedding is currently supported only by the X11 platform plugin.
+*/
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
@@ -1126,7 +1145,7 @@ void QWindow::setY(int arg)
 void QWindow::setWidth(int arg)
 {
     if (width() != arg)
-        setGeometry(QRect(x(), y(), arg, height()));
+        resize(arg, height());
 }
 
 /*!
@@ -1136,7 +1155,7 @@ void QWindow::setWidth(int arg)
 void QWindow::setHeight(int arg)
 {
     if (height() != arg)
-        setGeometry(QRect(x(), y(), width(), arg));
+        resize(width(), arg);
 }
 
 /*!
@@ -1259,6 +1278,7 @@ void QWindow::setGeometry(int posx, int posy, int w, int h)
 void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
+    d->positionAutomatic = false;
     if (rect == geometry())
         return;
     QRect oldRect = geometry();
@@ -2105,6 +2125,34 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         }
     }
 
+}
+
+/*!
+    Creates a local representation of a window created by another process or by
+    using native libraries below Qt.
+
+    Given the handle \a id to a native window, this method creates a QWindow
+    object which can be used to represent the window when invoking methods like
+    setParent() and setTransientParent().
+    This can be used, on platforms which support it, to embed a window inside a
+    container or to make a window stick on top of a window created by another
+    process.
+
+    \sa setParent()
+    \sa setTransientParent()
+*/
+QWindow *QWindow::fromWinId(WId id)
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ForeignWindows)) {
+        qWarning() << "QWindow::fromWinId(): platform plugin does not support foreign windows.";
+        return 0;
+    }
+
+    QWindow *window = new QWindow;
+    window->setFlags(Qt::ForeignWindow);
+    window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
+    window->create();
+    return window;
 }
 
 #ifndef QT_NO_CURSOR

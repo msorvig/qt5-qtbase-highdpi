@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -522,11 +523,6 @@ void Generator::generateCode()
     }
     if (!purestSuperClass.isEmpty() && !isQObject) {
         QByteArray superClass = purestSuperClass;
-        // workaround for VC6
-        if (superClass.contains("::")) {
-            fprintf(out, "    typedef %s QMocSuperClass;\n", superClass.constData());
-            superClass = "QMocSuperClass";
-        }
         fprintf(out, "    return %s::qt_metacast(_clname);\n", superClass.constData());
     } else {
         fprintf(out, "    return 0;\n");
@@ -848,11 +844,6 @@ void Generator::generateMetacall()
 
     if (!purestSuperClass.isEmpty() && !isQObject) {
         QByteArray superClass = purestSuperClass;
-        // workaround for VC6
-        if (superClass.contains("::")) {
-            fprintf(out, "    typedef %s QMocSuperClass;\n", superClass.constData());
-            superClass = "QMocSuperClass";
-        }
         fprintf(out, "    _id = %s::qt_metacall(_c, _id, _a);\n", superClass.constData());
     }
 
@@ -896,7 +887,7 @@ void Generator::generateMetacall()
         for (int i = 0; i < cdef->propertyList.size(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
             needGet |= !p.read.isEmpty() || !p.member.isEmpty();
-            if (!p.read.isEmpty())
+            if (!p.read.isEmpty() || !p.member.isEmpty())
                 needTempVarForGet |= (p.gspec != PropertyDef::PointerSpec
                                       && p.gspec != PropertyDef::ReferenceSpec);
 

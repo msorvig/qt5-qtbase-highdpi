@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <QAtomicInt>
+#include <QThread>
+#include <QSemaphore>
 #include <qvector.h>
 
 struct Movable {
@@ -47,21 +50,21 @@ struct Movable {
         : i(input)
         , state(Constructed)
     {
-        ++counter;
+        counter.fetchAndAddRelaxed(1);
     }
     Movable(const Movable &other)
         : i(other.i)
         , state(Constructed)
     {
         check(other.state, Constructed);
-        ++counter;
+        counter.fetchAndAddRelaxed(1);
     }
 
     ~Movable()
     {
         check(state, Constructed);
         i = 0;
-        --counter;
+        counter.fetchAndAddRelaxed(-1);
         state = Destructed;
     }
 
@@ -80,7 +83,7 @@ struct Movable {
         return *this;
     }
     char i;
-    static int counter;
+    static QAtomicInt counter;
 private:
     enum State { Constructed = 106, Destructed = 110 };
     State state;
@@ -91,7 +94,7 @@ private:
     }
 };
 
-int Movable::counter = 0;
+QAtomicInt Movable::counter = 0;
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(Movable, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
@@ -103,21 +106,21 @@ struct Custom {
         , that(this)
         , state(Constructed)
     {
-        ++counter;
+        counter.fetchAndAddRelaxed(1);
     }
     Custom(const Custom &other)
         : that(this)
         , state(Constructed)
     {
         check(&other);
-        ++counter;
+        counter.fetchAndAddRelaxed(1);
         this->i = other.i;
     }
     ~Custom()
     {
         check(this);
         i = 0;
-        --counter;
+        counter.fetchAndAddRelaxed(-1);
         state = Destructed;
     }
 
@@ -135,7 +138,7 @@ struct Custom {
         i = other.i;
         return *this;
     }
-    static int counter;
+    static QAtomicInt counter;
 
     char i;             // used to identify orgin of an instance
 private:
@@ -151,7 +154,7 @@ private:
         QCOMPARE(c->state, Constructed);
     }
 };
-int Custom::counter = 0;
+QAtomicInt Custom::counter = 0;
 
 Q_DECLARE_METATYPE(Custom);
 
@@ -233,6 +236,7 @@ private slots:
     void removeInt() const;
     void removeMovable() const;
     void removeCustom() const;
+    void removeFirstLast() const;
     void resizePOD_data() const;
     void resizePOD() const;
     void resizeComplexMovable_data() const;
@@ -271,6 +275,9 @@ private slots:
     void detachInt() const;
     void detachMovable() const;
     void detachCustom() const;
+    void detachThreadSafetyInt() const;
+    void detachThreadSafetyMovable() const;
+    void detachThreadSafetyCustom() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -294,6 +301,7 @@ private:
     template<typename T> void setSharable_data() const;
     template<typename T> void setSharable() const;
     template<typename T> void detach() const;
+    template<typename T> void detachThreadSafety() const;
 };
 
 
@@ -415,16 +423,16 @@ void tst_QVector::copyConstructorInt() const
 
 void tst_QVector::copyConstructorMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     copyConstructor<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::copyConstructorCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     copyConstructor<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -465,16 +473,16 @@ void tst_QVector::addInt() const
 
 void tst_QVector::addMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     add<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::addCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     add<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -523,16 +531,16 @@ void tst_QVector::appendInt() const
 
 void tst_QVector::appendMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     append<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::appendCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     append<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::at() const
@@ -602,16 +610,16 @@ void tst_QVector::capacityInt() const
 
 void tst_QVector::capacityMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     capacity<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::capacityCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     capacity<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -633,16 +641,16 @@ void tst_QVector::clearInt() const
 
 void tst_QVector::clearMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     clear<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::clearCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     clear<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::constData() const
@@ -717,16 +725,16 @@ void tst_QVector::countInt() const
 
 void tst_QVector::countMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     count<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::countCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     count<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::data() const
@@ -771,16 +779,16 @@ void tst_QVector::emptyInt() const
 
 void tst_QVector::emptyMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     empty<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::emptyCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     empty<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::endsWith() const
@@ -826,16 +834,16 @@ void tst_QVector::eraseEmptyInt() const
 
 void tst_QVector::eraseEmptyMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     eraseEmpty<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::eraseEmptyCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     eraseEmpty<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -863,16 +871,16 @@ void tst_QVector::eraseEmptyReservedInt() const
 
 void tst_QVector::eraseEmptyReservedMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     eraseEmptyReserved<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::eraseEmptyReservedCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     eraseEmptyReserved<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -986,30 +994,30 @@ void tst_QVector::eraseIntShared() const
 
 void tst_QVector::eraseMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     erase<Movable>(false);
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::eraseMovableShared() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     erase<Movable>(true);
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::eraseCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     erase<Custom>(false);
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::eraseCustomShared() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     erase<Custom>(true);
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T> void tst_QVector::eraseReserved() const
@@ -1062,16 +1070,16 @@ void tst_QVector::eraseReservedInt() const
 
 void tst_QVector::eraseReservedMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     eraseReserved<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::eraseReservedCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     eraseReserved<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -1102,16 +1110,16 @@ void tst_QVector::fillInt() const
 
 void tst_QVector::fillMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     fill<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::fillCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     fill<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::first() const
@@ -1152,16 +1160,16 @@ void tst_QVector::fromListInt() const
 
 void tst_QVector::fromListMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     fromList<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::fromListCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     fromList<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::fromStdVector() const
@@ -1338,16 +1346,16 @@ void tst_QVector::prependInt() const
 
 void tst_QVector::prependMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     prepend<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::prependCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     prepend<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -1374,17 +1382,105 @@ void tst_QVector::removeInt() const
 
 void tst_QVector::removeMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     remove<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::removeCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     remove<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
+
+struct RemoveLastTestClass
+{
+    RemoveLastTestClass() { other = 0; deleted = false; }
+    RemoveLastTestClass *other;
+    bool deleted;
+    ~RemoveLastTestClass()
+    {
+        deleted = true;
+        if (other)
+            other->other = 0;
+    }
+};
+
+void tst_QVector::removeFirstLast() const
+{
+    // pop_pack - pop_front
+    QVector<int> t, t2;
+    t.append(1);
+    t.append(2);
+    t.append(3);
+    t.append(4);
+    t2 = t;
+    t.pop_front();
+    QCOMPARE(t.size(), 3);
+    QCOMPARE(t.at(0), 2);
+    t.pop_back();
+    QCOMPARE(t.size(), 2);
+    QCOMPARE(t.at(0), 2);
+    QCOMPARE(t.at(1), 3);
+
+    // takefirst - takeLast
+    int n1 = t2.takeLast();
+    QCOMPARE(t2.size(), 3);
+    QCOMPARE(n1, 4);
+    QCOMPARE(t2.at(0), 1);
+    QCOMPARE(t2.at(2), 3);
+    n1 = t2.takeFirst();
+    QCOMPARE(t2.size(), 2);
+    QCOMPARE(n1, 1);
+    QCOMPARE(t2.at(0), 2);
+    QCOMPARE(t2.at(1), 3);
+
+    // remove first
+    QVector<int> x, y;
+    x.append(1);
+    x.append(2);
+    y = x;
+    x.removeFirst();
+    QCOMPARE(x.size(), 1);
+    QCOMPARE(y.size(), 2);
+    QCOMPARE(x.at(0), 2);
+
+    // remove Last
+    QVector<RemoveLastTestClass> v;
+    v.resize(2);
+    v[0].other = &(v[1]);
+    v[1].other = &(v[0]);
+    // Check dtor - complex type
+    QVERIFY(v.at(0).other != 0);
+    v.removeLast();
+    QVERIFY(v.at(0).other == 0);
+    QCOMPARE(v.at(0).deleted, false);
+    // check iterator
+    int count = 0;
+    for (QVector<RemoveLastTestClass>::const_iterator i = v.constBegin(); i != v.constEnd(); ++i) {
+        ++count;
+        QVERIFY(i->other == 0);
+        QCOMPARE(i->deleted, false);
+    }
+    // Check size
+    QCOMPARE(count, 1);
+    QCOMPARE(v.size(), 1);
+    v.removeLast();
+    QCOMPARE(v.size(), 0);
+    // Check if we do correct realloc
+    QVector<int> v2, v3;
+    v2.append(1);
+    v2.append(2);
+    v3 = v2; // shared
+    v2.removeLast();
+    QCOMPARE(v2.size(), 1);
+    QCOMPARE(v3.size(), 2);
+    QCOMPARE(v2.at(0), 1);
+    QCOMPARE(v3.at(0), 1);
+    QCOMPARE(v3.at(1), 2);
+}
+
 
 void tst_QVector::resizePOD_data() const
 {
@@ -1510,7 +1606,7 @@ void tst_QVector::resizeComplexMovable_data() const
 
 void tst_QVector::resizeComplexMovable() const
 {
-    const int items = Movable::counter;
+    const int items = Movable::counter.loadAcquire();
     {
         QFETCH(QVector<Movable>, vector);
         QFETCH(int, size);
@@ -1529,7 +1625,7 @@ void tst_QVector::resizeComplexMovable() const
         QCOMPARE(vector.size(), 0);
         QVERIFY(vector.capacity() <= capacity);
     }
-    QCOMPARE(items, Movable::counter);
+    QCOMPARE(items, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::resizeComplex_data() const
@@ -1585,7 +1681,7 @@ void tst_QVector::resizeComplex_data() const
 
 void tst_QVector::resizeComplex() const
 {
-    const int items = Custom::counter;
+    const int items = Custom::counter.loadAcquire();
     {
         QFETCH(QVector<Custom>, vector);
         QFETCH(int, size);
@@ -1604,12 +1700,12 @@ void tst_QVector::resizeComplex() const
         QVERIFY(vector.isEmpty());
         QVERIFY(vector.capacity() <= capacity);
     }
-    QCOMPARE(Custom::counter, items);
+    QCOMPARE(Custom::counter.loadAcquire(), items);
 }
 
 void tst_QVector::resizeCtorAndDtor() const
 {
-    const int items = Custom::counter;
+    const int items = Custom::counter.loadAcquire();
     {
         QVector<Custom> null;
         QVector<Custom> empty(0, '0');
@@ -1631,7 +1727,7 @@ void tst_QVector::resizeCtorAndDtor() const
         nonEmpty.resize(0);
         nonEmptyReserved.resize(2);
     }
-    QCOMPARE(Custom::counter, items);
+    QCOMPARE(Custom::counter.loadAcquire(), items);
 }
 
 template<typename T>
@@ -1661,16 +1757,16 @@ void tst_QVector::sizeInt() const
 
 void tst_QVector::sizeMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     size<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::sizeCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     size<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 // ::squeeze() is tested in ::capacity().
@@ -1720,16 +1816,16 @@ void tst_QVector::swapInt() const
 
 void tst_QVector::swapMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     swap<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::swapCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     swap<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::toList() const
@@ -1947,16 +2043,16 @@ void tst_QVector::initializeListInt()
 
 void tst_QVector::initializeListMovable()
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     initializeList<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::initializeListCustom()
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     initializeList<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QVector::const_shared_null()
@@ -2084,16 +2180,16 @@ void tst_QVector::setSharableInt()
 
 void tst_QVector::setSharableMovable()
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     setSharable<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::setSharableCustom()
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     setSharable<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -2200,17 +2296,87 @@ void tst_QVector::detachInt() const
 
 void tst_QVector::detachMovable() const
 {
-    const int instancesCount = Movable::counter;
+    const int instancesCount = Movable::counter.loadAcquire();
     detach<Movable>();
-    QCOMPARE(instancesCount, Movable::counter);
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
 }
 
 void tst_QVector::detachCustom() const
 {
-    const int instancesCount = Custom::counter;
+    const int instancesCount = Custom::counter.loadAcquire();
     detach<Custom>();
-    QCOMPARE(instancesCount, Custom::counter);
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
-QTEST_APPLESS_MAIN(tst_QVector)
+static QAtomicPointer<QVector<int> > detachThreadSafetyDataInt;
+static QAtomicPointer<QVector<Movable> > detachThreadSafetyDataMovable;
+static QAtomicPointer<QVector<Custom> > detachThreadSafetyDataCustom;
+
+template<typename T> QAtomicPointer<QVector<T> > *detachThreadSafetyData();
+template<> QAtomicPointer<QVector<int> > *detachThreadSafetyData() { return &detachThreadSafetyDataInt; }
+template<> QAtomicPointer<QVector<Movable> > *detachThreadSafetyData() { return &detachThreadSafetyDataMovable; }
+template<> QAtomicPointer<QVector<Custom> > *detachThreadSafetyData() { return &detachThreadSafetyDataCustom; }
+
+static QSemaphore detachThreadSafetyLock;
+
+template<typename T>
+void tst_QVector::detachThreadSafety() const
+{
+    delete detachThreadSafetyData<T>()->fetchAndStoreOrdered(new QVector<T>(SimpleValue<T>::vector(400)));
+
+    static const uint threadsCount = 5;
+
+    struct : QThread {
+        void run() Q_DECL_OVERRIDE
+        {
+            QVector<T> copy(*detachThreadSafetyData<T>()->load());
+            QVERIFY(!copy.isDetached());
+            detachThreadSafetyLock.release();
+            detachThreadSafetyLock.acquire(100);
+            copy.detach();
+        }
+    } threads[threadsCount];
+
+    for (uint i = 0; i < threadsCount; ++i)
+        threads[i].start();
+    QThread::yieldCurrentThread();
+    detachThreadSafetyLock.acquire(threadsCount);
+
+    // destroy static original data
+    delete detachThreadSafetyData<T>()->fetchAndStoreOrdered(0);
+
+    QVERIFY(threadsCount < 100);
+    detachThreadSafetyLock.release(threadsCount * 100);
+    QThread::yieldCurrentThread();
+
+    for (uint i = 0; i < threadsCount; ++i)
+        threads[i].wait();
+}
+
+void tst_QVector::detachThreadSafetyInt() const
+{
+    for (uint i = 0; i < 128; ++i)
+        detachThreadSafety<int>();
+}
+
+void tst_QVector::detachThreadSafetyMovable() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    for (uint i = 0; i < 128; ++i) {
+        detachThreadSafety<Movable>();
+        QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
+    }
+}
+
+void tst_QVector::detachThreadSafetyCustom() const
+{
+    const int instancesCount = Custom::counter.loadAcquire();
+    for (uint i = 0; i < 128; ++i) {
+        detachThreadSafety<Custom>();
+        QCOMPARE(Custom::counter.loadAcquire(), instancesCount);
+    }
+}
+
+
+QTEST_MAIN(tst_QVector)
 #include "tst_qvector.moc"

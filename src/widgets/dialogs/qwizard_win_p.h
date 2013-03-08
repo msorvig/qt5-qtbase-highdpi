@@ -87,7 +87,7 @@ public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
-    void updateCustomMargins();
+    void updateCustomMargins(bool vistaMargins);
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);
@@ -107,8 +107,11 @@ public:
     }
     static int topOffset();
 
+    static HDC backingStoreDC(const QWidget *wizard, QPoint *offset);
+
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
+    HWND wizardHWND() const;
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
     static bool drawBlackRect(const QRect &rect, HDC hdc);
 

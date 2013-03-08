@@ -85,6 +85,11 @@ public:
     bool visit(QQmlJS::AST::UiPublicMember *member);
     void endVisit(QQmlJS::AST::UiPublicMember *definition);
 
+    virtual bool visit(QQmlJS::AST::UiObjectBinding *);
+    virtual void endVisit(QQmlJS::AST::UiObjectBinding *);
+    virtual void endVisit(QQmlJS::AST::UiArrayBinding *);
+    virtual bool visit(QQmlJS::AST::UiArrayBinding *);
+
     bool visit(QQmlJS::AST::IdentifierPropertyName *idproperty);
 
     bool visit(QQmlJS::AST::FunctionDeclaration *);
@@ -97,6 +102,7 @@ public:
     void endVisit(QQmlJS::AST::UiQualifiedId *);
 
 private:
+    QString getFullyQualifiedId(QQmlJS::AST::UiQualifiedId *id);
     QQmlJS::AST::SourceLocation precedingComment(quint32 offset) const;
     bool applyDocumentation(QQmlJS::AST::SourceLocation location, Node *node);
     void applyMetacommands(QQmlJS::AST::SourceLocation location, Node* node, Doc& doc);
@@ -110,7 +116,7 @@ private:
     QString filePath;
     QString name;
     QString document;
-    QList<QPair<QString, QString> > importList;
+    ImportList importList;
     QSet<QString> commands;
     QSet<QString> topics;
     QSet<quint32> usedComments;

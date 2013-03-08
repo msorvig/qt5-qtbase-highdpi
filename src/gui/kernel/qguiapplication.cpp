@@ -1507,10 +1507,20 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 {
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
-    if (e->nullWindow)
+    if (e->nullWindow
+#ifdef Q_OS_ANDROID
+           || (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back) || e->key == Qt::Key_Menu
+#endif
+            ) {
         window = QGuiApplication::focusWindow();
-    if (!window)
+    }
+    if (!window
+#ifdef Q_OS_ANDROID
+           && e->keyType != QEvent::KeyRelease && e->key != Qt::Key_Back
+#endif
+            ) {
         return;
+    }
     if (window->d_func()->blockedByModalWindow) {
         // a modal window is blocking this window, don't allow key events through
         return;
@@ -1520,7 +1530,19 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
                  e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
                  e->unicode, e->repeat, e->repeatCount);
     ev.setTimestamp(e->timestamp);
-    QGuiApplication::sendSpontaneousEvent(window, &ev);
+
+#ifdef Q_OS_ANDROID
+    if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back) {
+        if (!window) {
+            qApp->quit();
+        } else {
+            QGuiApplication::sendEvent(window, &ev);
+            if (!ev.isAccepted() && e->key == Qt::Key_Back)
+                QWindowSystemInterface::handleCloseEvent(window);
+        }
+    } else
+#endif
+        QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
 
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
@@ -1569,6 +1591,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     QGuiApplicationPrivate::focus_window = newFocus;
+    if (!qApp)
+        return;
 
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
@@ -1581,7 +1605,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     if (QGuiApplicationPrivate::focus_window) {
-        QFocusEvent focusIn(QEvent::FocusIn);
+        QFocusEvent focusIn(QEvent::FocusIn, e->reason);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
                          qApp, SLOT(_q_updateFocusObject(QObject*)));

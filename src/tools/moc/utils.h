@@ -60,7 +60,7 @@ inline bool is_ident_start(char s)
 {
     return ((s >= 'a' && s <= 'z')
             || (s >= 'A' && s <= 'Z')
-            || s == '_'
+            || s == '_' || s == '$'
        );
 }
 
@@ -69,7 +69,7 @@ inline bool is_ident_char(char s)
     return ((s >= 'a' && s <= 'z')
             || (s >= 'A' && s <= 'Z')
             || (s >= '0' && s <= '9')
-            || s == '_'
+            || s == '_' || s == '$'
        );
 }
 

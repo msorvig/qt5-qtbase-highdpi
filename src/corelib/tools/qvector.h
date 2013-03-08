@@ -138,6 +138,10 @@ public:
     void replace(int i, const T &t);
     void remove(int i);
     void remove(int i, int n);
+    inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
+    inline void removeLast()  { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
+    inline T takeFirst() { Q_ASSERT(!isEmpty()); T r = first(); removeFirst(); return r; }
+    inline T takeLast()  { Q_ASSERT(!isEmpty()); T r = last(); removeLast(); return r; }
 
     QVector<T> &fill(const T &t, int size = -1);
 
@@ -198,8 +202,8 @@ public:
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
     inline void push_front(const T &t) { prepend(t); }
-    void pop_back() { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
-    void pop_front() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
+    void pop_back() { removeLast(); }
+    void pop_front() { removeFirst(); }
     inline bool empty() const
     { return d->size == 0; }
     inline T& front() { return first(); }
@@ -504,8 +508,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
     }
     if (d != x) {
         if (!d->ref.deref()) {
-            Q_ASSERT(!isShared);
-            if (QTypeInfo<T>::isStatic || !aalloc) {
+            if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
                 // data was copy constructed, we need to call destructors
                 // or if !alloc we did nothing to the old 'd'.
                 freeData(d);

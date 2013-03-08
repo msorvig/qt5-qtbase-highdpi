@@ -40,7 +40,7 @@ contains( styles, all ) {
     styles = fusion mac windows windowsxp windowsvista
 }
 
-!macx-*|ios:styles -= mac
+!macx:styles -= mac
 
 contains(QT_CONFIG, gtkstyle) {
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE
@@ -135,4 +135,11 @@ contains( styles, windowsmobile ) {
     SOURCES += styles/qwindowsmobilestyle.cpp
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSMOBILE
+}
+
+contains( styles, android ) {
+    HEADERS += styles/qandroidstyle_p.h
+    SOURCES += styles/qandroidstyle.cpp
+} else {
+    DEFINES += QT_NO_STYLE_ANDROID
 }
