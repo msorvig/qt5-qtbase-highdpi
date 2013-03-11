@@ -129,7 +129,7 @@ QPaintDevice *QBackingStore::paintDevice()
         // called multiple times on the same image so we would be accumulating
         // scale factor changes.
         if (image->devicePixelRatio() < 2)
-            image->setDevicePixelRatio(qhidpiIsEmulationGetScaleFactor());
+            image->setDevicePixelRatio(qhidpiEmulationGetScaleFactor());
     }
 
     return device;
@@ -191,7 +191,7 @@ void QBackingStore::endPaint()
 void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size; // QBackingStore stores size in point, QPlatformBackingStore gets it in pixel.
-    d_ptr->platformBackingStore->resize(size * qhidpiIsEmulationGetScaleFactor(), d_ptr->staticContents);
+    d_ptr->platformBackingStore->resize(size * qhidpiEmulationGetScaleFactor(), d_ptr->staticContents);
 }
 
 /*!

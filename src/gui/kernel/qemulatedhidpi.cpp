@@ -18,7 +18,7 @@ bool qhidpiIsEmulationEnabled()
     return qt_use_emulated_hidpi_mode;
 }
 
-qreal qhidpiIsEmulationGetScaleFactor()
+qreal qhidpiEmulationGetScaleFactor()
 {
     if (!qhidpiIsEmulationEnabled())
         return 1.0f;

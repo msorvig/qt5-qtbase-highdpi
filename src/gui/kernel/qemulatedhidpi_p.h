@@ -23,7 +23,7 @@
 //
 //void qhidpiSetEmulationEnabled(bool enable);
 Q_GUI_EXPORT bool qhidpiIsEmulationEnabled();
-Q_GUI_EXPORT qreal qhidpiIsEmulationGetScaleFactor();
+Q_GUI_EXPORT qreal qhidpiEmulationGetScaleFactor();
 
 
 // ### don't want to export 20 new symbols, but
@@ -56,7 +56,7 @@ T qhidpiPixelToPoint(const T &pixelValue)
     if (!qhidpiIsEmulationEnabled())
         return pixelValue;
 
-    return pixelValue / qhidpiIsEmulationGetScaleFactor();
+    return pixelValue / qhidpiEmulationGetScaleFactor();
 
 }
 
@@ -66,7 +66,7 @@ T qhidpiPointToPixel(const T &pointValue)
     if (!qhidpiIsEmulationEnabled())
         return pointValue;
 
-    return pointValue * qhidpiIsEmulationGetScaleFactor();
+    return pointValue * qhidpiEmulationGetScaleFactor();
 }
 
 // Any QVector<T> were T has operator/()
@@ -78,7 +78,7 @@ QVector<T> qhidpiPixelToPoint(const QVector<T> &pixelValues)
 
     QVector<T> pointValues;
     foreach (const T& pixelValue, pixelValues)
-        pointValues.append(pixelValue / qhidpiIsEmulationGetScaleFactor());
+        pointValues.append(pixelValue / qhidpiEmulationGetScaleFactor());
     return pointValues;
 }
 
@@ -90,7 +90,7 @@ QVector<T> qhidpiPointToPixel(const QVector<T> &pointValues)
 
     QVector<T> pixelValues;
     foreach (const T& pointValue, pointValues)
-        pixelValues.append(pointValue * qhidpiIsEmulationGetScaleFactor());
+        pixelValues.append(pointValue * qhidpiEmulationGetScaleFactor());
     return pixelValues;
 }
 

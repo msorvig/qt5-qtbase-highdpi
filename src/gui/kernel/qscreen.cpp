@@ -224,7 +224,7 @@ qreal QScreen::logicalDotsPerInch() const
 qreal QScreen::devicePixelRatio() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->devicePixelRatio() * qhidpiIsEmulationGetScaleFactor();
+    return d->platformScreen->devicePixelRatio() * qhidpiEmulationGetScaleFactor();
 }
 
 /*!
