@@ -148,7 +148,7 @@ QRegion qhidpiPixelToPoint(const QRegion &pixelRegion)
     QRegion pointRegion;
     foreach (const QRect &rect, pixelRegion.rects())
         pointRegion += qhidpiPixelToPoint(rect);
-    return pixelRegion;
+    return pointRegion;
 }
 
 QRegion qhidpiPointToPixel(const QRegion &pointRegion)
@@ -159,5 +159,5 @@ QRegion qhidpiPointToPixel(const QRegion &pointRegion)
     QRegion pixelRegon;
     foreach (const QRect &rect, pointRegion.rects())
         pixelRegon += qhidpiPointToPixel(rect);
-    return pixelRegon; // ### figure it out
+    return pixelRegon;
 }
