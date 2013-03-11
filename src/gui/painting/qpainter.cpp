@@ -1845,13 +1845,8 @@ bool QPainter::begin(QPaintDevice *pd)
 
     Q_ASSERT(d->engine->isActive());
 
-#ifdef Q_OS_MAC
-    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
     const bool isHighDpi = (pd->devType() == QInternal::Printer || d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
                            false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
-#else
-    const bool isHighDpi = false;
-#endif
     if (!d->state->redirectionMatrix.isIdentity() || isHighDpi)
         d->updateMatrix();
 
