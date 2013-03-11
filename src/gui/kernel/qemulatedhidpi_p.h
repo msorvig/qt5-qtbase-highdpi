@@ -49,51 +49,48 @@ Q_GUI_EXPORT QMargins qhidpiPointToPixel(const QMargins &pointMargins);
 Q_GUI_EXPORT QRegion qhidpiPixelToPoint(const QRegion &pixelRegion);
 Q_GUI_EXPORT QRegion qhidpiPointToPixel(const QRegion &pointRegion);
 
-extern const qreal qt_emulated_scale_factor;
-extern bool qt_use_emulated_hidpi_mode;
-
 // Any T that has operator/()
 template <typename T>
 T qhidpiPixelToPoint(const T &pixelValue)
 {
-    if (!qt_use_emulated_hidpi_mode)
+    if (!qhidpiIsEmulationEnabled())
         return pixelValue;
 
-    return pixelValue / qt_emulated_scale_factor;
+    return pixelValue / qhidpiIsEmulationGetScaleFactor();
 
 }
 
 template <typename T>
 T qhidpiPointToPixel(const T &pointValue)
 {
-    if (!qt_use_emulated_hidpi_mode)
+    if (!qhidpiIsEmulationEnabled())
         return pointValue;
 
-    return pointValue * qt_emulated_scale_factor;
+    return pointValue * qhidpiIsEmulationGetScaleFactor();
 }
 
 // Any QVector<T> were T has operator/()
 template <typename T>
 QVector<T> qhidpiPixelToPoint(const QVector<T> &pixelValues)
 {
-    if (!qt_use_emulated_hidpi_mode)
+    if (!qhidpiIsEmulationEnabled())
         return pixelValues;
 
     QVector<T> pointValues;
     foreach (const T& pixelValue, pixelValues)
-        pointValues.append(pixelValue / qt_emulated_scale_factor);
+        pointValues.append(pixelValue / qhidpiIsEmulationGetScaleFactor());
     return pointValues;
 }
 
 template <typename T>
 QVector<T> qhidpiPointToPixel(const QVector<T> &pointValues)
 {
-    if (!qt_use_emulated_hidpi_mode)
+    if (!qhidpiIsEmulationEnabled())
         return pointValues;
 
     QVector<T> pixelValues;
     foreach (const T& pointValue, pointValues)
-        pixelValues.append(pointValue * qt_emulated_scale_factor);
+        pixelValues.append(pointValue * qhidpiIsEmulationGetScaleFactor());
     return pixelValues;
 }
 

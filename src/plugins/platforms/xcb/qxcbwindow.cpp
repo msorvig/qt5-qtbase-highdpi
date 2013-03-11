@@ -263,10 +263,10 @@ void QXcbWindow::create()
         rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
         rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
-        rect.setSize(minimumSize);
+        rect.setSize(qhidpiPointToPixel(minimumSize));
     } else {
-        rect.setWidth(defaultWindowWidth);
-        rect.setHeight(defaultWindowHeight);
+        rect.setWidth(qhidpiPointToPixel(int(defaultWindowWidth)));
+        rect.setHeight(qhidpiPointToPixel(int(defaultWindowHeight)));
     }
 
     xcb_window_t xcb_parent_id = m_screen->root();

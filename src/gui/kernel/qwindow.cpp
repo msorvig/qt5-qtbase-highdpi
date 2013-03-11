@@ -1428,7 +1428,7 @@ void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QRect(position(), newSize));
+        d->platformWindow->setGeometry(qhidpiPointToPixel(QRect(position(), newSize)));
     } else {
         d->geometry.setSize(newSize);
     }
