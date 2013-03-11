@@ -1808,7 +1808,7 @@ void QWidgetPrivate::setSystemClip(QPaintDevice *paintDevice, const QRegion &reg
 // Transform the system clip region from device-independent pixels to device pixels
     QPaintEngine *paintEngine = paintDevice->paintEngine();
     const qreal devicePixelRatio = (paintDevice->physicalDpiX() == 0 || paintDevice->logicalDpiX() == 0) ?
-                                    1.0 : (paintDevice->physicalDpiX() / paintDevice->logicalDpiX());
+                                    1.0 : qreal(paintDevice->physicalDpiX()) / qreal(paintDevice->logicalDpiX());
     QTransform scaleTransform;
     scaleTransform.scale(devicePixelRatio, devicePixelRatio);
     paintEngine->d_func()->systemClip = scaleTransform.map(region);

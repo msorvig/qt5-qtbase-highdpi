@@ -230,7 +230,7 @@ QTransform QPainterPrivate::hidpiScaleTransform() const
     // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
     if (device->devType() == QInternal::Printer || device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
         return QTransform();
-    const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
+    const qreal deviceScale = qreal(device->physicalDpiX()) / qreal(device->logicalDpiX());
     if (deviceScale > 1.0)
         return QTransform::fromScale(deviceScale, deviceScale);
     return QTransform();
@@ -1846,7 +1846,7 @@ bool QPainter::begin(QPaintDevice *pd)
     Q_ASSERT(d->engine->isActive());
 
     const bool isHighDpi = (pd->devType() == QInternal::Printer || d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
-                           false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
+                           false : (qreal(d->device->physicalDpiX()) / qreal(d->device->logicalDpiX()) > 1.0);
     if (!d->state->redirectionMatrix.isIdentity() || isHighDpi)
         d->updateMatrix();
 

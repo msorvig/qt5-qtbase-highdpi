@@ -1,17 +1,13 @@
 #include "qemulatedhidpi_p.h"
 bool qt_use_emulated_hidpi_mode_set = false;
 bool qt_use_emulated_hidpi_mode = false;
-const qreal qt_emulated_scale_factor = 2.0;
+qreal qt_emulated_scale_factor = 1.0;
 
-/*void qhidpiSetEmulationEnabled(bool enable)
-{
-    qt_use_emulated_hidpi_mode = enable;
-}
-*/
 bool qhidpiIsEmulationEnabled()
 {
     if (!qt_use_emulated_hidpi_mode_set) {
-        qt_use_emulated_hidpi_mode = !qgetenv("QT_EMULATED_HIGHDPI").isEmpty();
+        qt_emulated_scale_factor = qgetenv("QT_HIGHDPI_SCALE_FACTOR").toFloat();
+        qt_use_emulated_hidpi_mode = qt_emulated_scale_factor > 1.0;
         qt_use_emulated_hidpi_mode_set = true;
     }
 

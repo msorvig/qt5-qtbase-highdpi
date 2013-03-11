@@ -21,7 +21,6 @@
 // The functions are pass-through functions if hidpi emulation is
 // disabled. (see qemulatedhidpi.cpp).
 //
-//void qhidpiSetEmulationEnabled(bool enable);
 Q_GUI_EXPORT bool qhidpiIsEmulationEnabled();
 Q_GUI_EXPORT qreal qhidpiEmulationGetScaleFactor();
 
