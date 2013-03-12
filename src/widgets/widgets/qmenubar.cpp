@@ -979,6 +979,9 @@ void QMenuBar::paintEvent(QPaintEvent *e)
         if(!e->rect().intersects(adjustedActionRect))
             continue;
 
+        // ### high-dpi work around off-by-one rect.
+        adjustedActionRect.adjust(0,0,0,-1);
+
         emptyArea -= adjustedActionRect;
         QStyleOptionMenuItem opt;
         initStyleOption(&opt, action);
@@ -1012,6 +1015,7 @@ void QMenuBar::paintEvent(QPaintEvent *e)
     menuOpt.rect = rect();
     menuOpt.menuRect = rect();
     style()->drawControl(QStyle::CE_MenuBarEmptyArea, &menuOpt, &p, this);
+
 }
 
 /*!
