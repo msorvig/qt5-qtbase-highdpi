@@ -735,9 +735,6 @@ QPixmap QIcon::pixmap(const QSize &size, Mode mode, State state) const
   mode, and \a state. The result might be smaller than requested, but
   never larger.
 
-  Setting the Qt::AA_UseHighDpiPixmaps application attribute enables this
-  function to return sizes that are larger than the requested size.
-
   \sa pixmap(), paint()
 */
 QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
@@ -799,9 +796,8 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
   Returns the actual size of the icon for the requested \a window  \a size, \a
   mode, and \a state.
 
-  The pixmap can be smaller than the requested size. If \a window is on
-  a high-dpi display the pixmap can be larger. In that case it will have
-  a devicePixelRatio larger than 1.
+  The pixmap can be smaller than the requested size.
+
 
   This function does not take Qt::AA_UseHighDpiPixmaps into account when
   called with a valid window pointer.
@@ -814,7 +810,12 @@ QSize QIcon::actualSize(QWindow *window, const QSize &size, Mode mode, State sta
         return QSize();
 
     QSize targetSize = size * qt_effective_device_pixel_ratio(window);
-    return d->engine->actualSize(targetSize, mode, state);
+    QSize actualSize = d->engine->actualSize(targetSize, mode, state);
+
+    // Match devicePixelRatio setting in pixmap() above.
+    if ((actualSize.width() > size.width() || actualSize.height() > size.height()))
+        return actualSize / 2;
+    return actualSize;
 }
 
 /*!
