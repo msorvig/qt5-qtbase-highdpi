@@ -93,3 +93,15 @@ QVector<T> qhidpiPointToPixel(const QVector<T> &pointValues)
     return pixelValues;
 }
 
+template <typename T, typename U>
+QPair<T, U> qhidpiPixelToPoint(const QPair<T, U> &pixelPair)
+{
+    return qMakePair(qhidpiPixelToPoint(pixelPair.first), qhidpiPixelToPoint(pixelPair.second));
+}
+
+template <typename T, typename U>
+QPair<T, U> qhidpiPointToPixel(const QPair<T, U> &pointPair)
+{
+    return qMakePair(qhidpiPointToPixel(pointPair.first), qhidpiPointToPixel(pointPair.second));
+}
+
