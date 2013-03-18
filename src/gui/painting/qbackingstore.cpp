@@ -117,19 +117,12 @@ QPaintDevice *QBackingStore::paintDevice()
 {
     QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
     // When emulating high-dpi mode (see qemulatedhidpi_p.h) we're asking the
-    // platform backing store might to create a "large" backing store image
+    // platform backing store to create a "large" backing store image
     // for us. This image needs to be converted into a high-dpi image by
     // setting the scale factor:
-    if (device->devType() == QInternal::Image) {
+    if (qhidpiIsEmulationEnabled() && device->devType() == QInternal::Image) {
         QImage *image = reinterpret_cast<QImage *>(device);
-
-        // The cocoa plugin will create a high-dpi image on native high-dpi
-        // displays. Don't change it! Ideally we could multiply in the
-        // emulated scale factor here, but the paintDevice() accessor is
-        // called multiple times on the same image so we would be accumulating
-        // scale factor changes.
-        if (image->devicePixelRatio() < 2.0)
-            image->setDevicePixelRatio(qhidpiEmulationGetScaleFactor());
+        image->setDevicePixelRatio(d_ptr->window->devicePixelRatio());
     }
 
     return device;

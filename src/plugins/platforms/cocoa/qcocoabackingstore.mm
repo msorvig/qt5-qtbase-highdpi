@@ -60,15 +60,16 @@ QCocoaBackingStore::~QCocoaBackingStore()
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
 {
-    if (m_qImage.size() / m_qImage.devicePixelRatio() != m_requestedSize) {
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+
+    if (m_qImage.size() / cocoaWindow->devicePixelRatio() != m_requestedSize) {
         CGImageRelease(m_cgImage);
         m_cgImage = 0;
 
         int scaleFactor = 1;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-            QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-            if (cocoaWindow && cocoaWindow->m_contentView && [cocoaWindow->m_contentView window]) {
+            if (cocoaWindow->m_contentView && [cocoaWindow->m_contentView window]) {
                 scaleFactor = int([[cocoaWindow->m_contentView window] backingScaleFactor]);
             }
         }
@@ -107,7 +108,8 @@ void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
     extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
-    const qreal devicePixelRatio = m_qImage.devicePixelRatio();
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    const qreal devicePixelRatio = cocoaWindow->devicePixelRatio();
     QPoint qpoint(dx * devicePixelRatio, dy * devicePixelRatio);
     const QVector<QRect> qrects = area.rects();
     for (int i = 0; i < qrects.count(); ++i) {

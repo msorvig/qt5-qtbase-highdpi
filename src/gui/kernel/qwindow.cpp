@@ -954,7 +954,7 @@ qreal QWindow::devicePixelRatio() const
     Q_D(const QWindow);
     if (!d->platformWindow)
         return 1.0;
-    return d->platformWindow->devicePixelRatio();
+    return d->platformWindow->devicePixelRatio() * qhidpiEmulationGetScaleFactor();
 }
 
 /*!
