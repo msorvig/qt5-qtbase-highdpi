@@ -6,8 +6,12 @@ qreal qt_emulated_scale_factor = 1.0;
 bool qhidpiIsEmulationEnabled()
 {
     if (!qt_use_emulated_hidpi_mode_set) {
-        qt_emulated_scale_factor = qgetenv("QT_HIGHDPI_SCALE_FACTOR").toFloat();
-        qt_use_emulated_hidpi_mode = qt_emulated_scale_factor > 1.0;
+        QByteArray scaleFactorEnv = qgetenv("QT_HIGHDPI_SCALE_FACTOR");
+        if (!scaleFactorEnv.isEmpty()) {
+            bool ok;
+            qt_emulated_scale_factor = scaleFactorEnv.toFloat(&ok);
+            qt_use_emulated_hidpi_mode = ok;
+        }
         qt_use_emulated_hidpi_mode_set = true;
     }
 
