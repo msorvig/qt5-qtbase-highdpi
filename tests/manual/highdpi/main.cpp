@@ -359,10 +359,10 @@ public:
         int y = 10;
         int dx = 50;
         int dy = 50;
-        int maxX = 600;
-        int minSize = 5;
-        int maxSize = 64;
-        int sizeIncrement = 5;
+        int maxX = 900;
+        int minSize = 4;
+        int maxSize = 70;
+        int sizeIncrement = 4;
 
         // Disable high-dpi icons
         qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
@@ -371,6 +371,8 @@ public:
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
             QPainter p(this);
             p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            p.setPen(Qt::red);
+            p.drawRect(QRect(QPoint(x, y), iconNormalDpi->actualSize(QSize(size, size))));
             if (x + dx > maxX)
                 y+=dy;
             x = ((x + dx) % maxX);
@@ -382,6 +384,8 @@ public:
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
             QPainter p(this);
             p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            p.setPen(Qt::red);
+            p.drawRect(QRect(QPoint(x, y), iconHighDPI->actualSize(QSize(size, size))));
             if (x + dx > maxX)
                 y+=dy;
             x = ((x + dx) % maxX);
@@ -397,6 +401,8 @@ public:
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
             QPainter p(this);
             p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            p.setPen(Qt::red);
+            p.drawRect(QRect(QPoint(x, y), iconNormalDpi->actualSize(QSize(size, size))));
             if (x + dx > maxX)
                 y+=dy;
             x = ((x + dx) % maxX);
@@ -408,6 +414,8 @@ public:
         for (int size = minSize; size < maxSize; size += sizeIncrement) {
             QPainter p(this);
             p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            p.setPen(Qt::red);
+            p.drawRect(QRect(QPoint(x, y), iconHighDPI->actualSize(QSize(size, size))));
             if (x + dx > maxX)
                 y+=dy;
             x = ((x + dx) % maxX);
